@@ -1,0 +1,16 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+go_analysis/data/output/simulation/mammals/whole_genome/biomart/gobp/*.csv
+go_analysis/data/output/simulation/mammals/whole_genome/biomart/gocc/*.csv
+go_analysis/data/output/simulation/mammals/whole_genome/biomart/gomf/*.csv
+go_analysis/data/output/simulation/mammals/whole_genome/default/gobp/*.csv
+go_analysis/data/output/simulation/mammals/whole_genome/default/gocc/*.csv
+go_analysis/data/output/simulation/mammals/whole_genome/default/gomf/*.csv
+go_analysis/data/output/simulation/aves/whole_genome/biomart/gobp/*.csv
+go_analysis/data/output/simulation/aves/whole_genome/biomart/gocc/*.csv
+go_analysis/data/output/simulation/aves/whole_genome/biomart/gomf/*.csv
+go_analysis/data/output/simulation/aves/whole_genome/default/gobp/*.csv
+go_analysis/data/output/simulation/aves/whole_genome/default/gocc/*.csv
+go_analysis/data/output/simulation/aves/whole_genome/default/gomf/*.csv
