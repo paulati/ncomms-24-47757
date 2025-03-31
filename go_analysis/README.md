@@ -43,3 +43,10 @@ We observe that `prop` value is approximately the same for both a conserved regi
 `gr` is the input regions set (conserved/accelerated), and the intersection of regions with the whole genome returns the same gr value. `n_total` value is the same in both sets by design. `p` depends on `n_total`, `prop`, and `n_hits`. Since `n_total` and `prop` values are the same for the accelerated regions set and the conserved regions subsets, in these specific conditions p depends only on `n_hits`.
 
 Based on these considerations, we propose the following strategy to select go terms associated with accelerated regions. We build an empirical distribution of `n_hits` values for a specific go term from rGREAT results of each of the 5,000 conserved regions subsets. Then we calculate `n_hits` value from rGREAT result of the accelerated regions set (acc_observed_region_hits). We calculate the proportion of random n_hits observed that are greater than acc_observed_region_hits. If this proportion is less than 0.05, then this set of accelerated regions differs from the random sets of conserved regions evaluating this specific go term and we can assume that the behavior of the accelerated regions set is independent of its conserved nature for this term. We report a go terms as associated with the accelerated regions set if the behavior of the accelerated regions set is independent from its conserved nature and adjusted p-value that is the result of rGREAT on accelerated regions set is less than 0.05.
+
+
+References:
+
+<https://academic.oup.com/bioinformatics/article/39/1/btac745/6832038>
+
+<https://github.com/jokergoo/rGREAT>
