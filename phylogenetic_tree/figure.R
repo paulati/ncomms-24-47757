@@ -126,9 +126,11 @@ plot_tree_base <- function(clade, nhx_reduced, data_labels) {
     svg_plot_file_name <- paste0(plot_file_name, '.svg')
     pdf_plot_file_name <- paste0(plot_file_name, '.pdf')
     ggplot2::ggsave(file = file.path(plot_base_path, svg_plot_file_name),
-                    plot = p_ingroup_outgroup, width=29.7, height=21, units = "cm")
+                    plot = p_ingroup_outgroup, width=29.7, height=21,
+                    units = "cm")
     ggplot2::ggsave(file = file.path(plot_base_path, pdf_plot_file_name),
-                    plot = p_ingroup_outgroup, width=29.7, height=21, units = "cm")
+                    plot = p_ingroup_outgroup, width=29.7, height=21,
+                    units = "cm")
 
 }
 
@@ -143,8 +145,19 @@ plot_tree_aves <- function() {
     tree <- ape::read.tree(nwk_file_path)
     all_species <- tree$tip.label
 
-    nodes_77way_aves <- c('galGal6', 'cotJap2', 'melGal5', 'tytAlb1', 'bucRhi1', 'anaPla1', 'apaVit1', 'calAnn1', 'cucCan1', 'chaVoc2', 'fulGla1', 'tauEry1', 'opiHoa1', 'phoRub1', 'colLiv1', 'lepDis1', 'merNub1', 'pelCri1', 'phaCar1', 'phaLep1', 'pteGut1', 'nipNip1', 'egrGar1', 'pygAde1', 'aptFor1', 'carCri1', 'mesUni1', 'eurHel1', 'balPav1', 'chlUnd1', 'falChe1', 'falPer1', 'aquChr2', 'halAlb1', 'halLeu1', 'corBra1', 'corCor1', 'acaChl1', 'ficAlb2', 'serCan1', 'zonAlb1', 'geoFor1', 'taeGut2', 'pseHum1', 'gavSte1', 'capCar1', 'melUnd1', 'amaVit1', 'araMac1', 'colStr1', 'picPub1', 'strCam1', 'tinGut2')
-    nodes_77way_sarcopterygii <- c('allMis1', 'cheMyd1', 'chrPic2', 'pelSin1', 'apaSpi1', 'anoCar2', 'xenTro9')
+    nodes_77way_aves <- c('galGal6', 'cotJap2', 'melGal5', 'tytAlb1', 'bucRhi1',
+                          'anaPla1', 'apaVit1', 'calAnn1', 'cucCan1', 'chaVoc2',
+                          'fulGla1', 'tauEry1', 'opiHoa1', 'phoRub1', 'colLiv1',
+                          'lepDis1', 'merNub1', 'pelCri1', 'phaCar1', 'phaLep1',
+                          'pteGut1', 'nipNip1', 'egrGar1', 'pygAde1', 'aptFor1',
+                          'carCri1', 'mesUni1', 'eurHel1', 'balPav1', 'chlUnd1',
+                          'falChe1', 'falPer1', 'aquChr2', 'halAlb1', 'halLeu1',
+                          'corBra1', 'corCor1', 'acaChl1', 'ficAlb2', 'serCan1',
+                          'zonAlb1', 'geoFor1', 'taeGut2', 'pseHum1', 'gavSte1',
+                          'capCar1', 'melUnd1', 'amaVit1', 'araMac1', 'colStr1',
+                          'picPub1', 'strCam1', 'tinGut2')
+    nodes_77way_sarcopterygii <- c('allMis1', 'cheMyd1', 'chrPic2', 'pelSin1',
+                                   'apaSpi1', 'anoCar2', 'xenTro9')
     nodes_77way <- c(nodes_77way_aves, nodes_77way_sarcopterygii)
 
     length(nodes_77way)
@@ -167,8 +180,8 @@ plot_tree_aves <- function() {
 
     }))
     data_labels_77_way$text_color <- as.factor(text_color)
-    data_labels_77_way$image_path <- file.path(data_base_path, 'images', '77way',
-                                                paste0(data_labels_77_way$code, '.png'))
+    data_labels_77_way$image_path <- file.path(data_base_path, 'images',
+                            '77way', paste0(data_labels_77_way$code, '.png'))
 
     rownames(data_labels_77_way) <- data_labels_77_way$code
 
@@ -189,8 +202,12 @@ plot_tree_mammals <- function() {
     all_species <- tree$tip.label
 
 
-    nodes_100way_mammals <- c('hg38', 'otoGar3', 'rheMac3', 'mm10', 'oryCun2', 'ochPri3', 'susScr3', 'turTru2', 'bosTau8', 'felCat8', 'myoLuc2', 'loxAfr3', 'echTel2', 'dasNov3', 'monDom5', 'macEug2', 'ornAna1')
-    nodes_100way_sarcopterygii <- c('allMis1', 'cheMyd1', 'chrPic2', 'pelSin1', 'apaSpi1', 'anoCar2', 'xenTro7', 'latCha1')
+    nodes_100way_mammals <- c('hg38', 'otoGar3', 'rheMac3', 'mm10', 'oryCun2',
+                              'ochPri3', 'susScr3', 'turTru2', 'bosTau8',
+                              'felCat8', 'myoLuc2', 'loxAfr3', 'echTel2',
+                              'dasNov3', 'monDom5', 'macEug2', 'ornAna1')
+    nodes_100way_sarcopterygii <- c('allMis1', 'cheMyd1', 'chrPic2', 'pelSin1',
+                                    'apaSpi1', 'anoCar2', 'xenTro7', 'latCha1')
     nodes_100way <- c(nodes_100way_mammals, nodes_100way_sarcopterygii)
 
     length(nodes_100way)
@@ -216,8 +233,8 @@ plot_tree_mammals <- function() {
 
     }))
     data_labels_100_way$text_color <- as.factor(text_color)
-    data_labels_100_way$image_path <- file.path(data_base_path, 'images', '100way',
-                                                paste0(data_labels_100_way$code, '.png'))
+    data_labels_100_way$image_path <- file.path(data_base_path, 'images',
+                        '100way', paste0(data_labels_100_way$code, '.png'))
 
     rownames(data_labels_100_way) <- data_labels_100_way$code
 
