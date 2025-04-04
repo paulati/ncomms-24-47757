@@ -1,0 +1,9 @@
+userSet	dbSet	collection	pValueLog	oddsRatio	support	rnkPV	rnkOR	rnkSup	maxRnk	meanRnk	b	c	d	description	cellType	tissue	antibody	treatment	dataSource	filename	qValue	size
+1	32	chicken_FAANG_TSR	2.825066788	1.523541128	61	1	4	28	28	11	2133	2827	150609	chicken_FAANG_TSR Cortex	NA	Cortex	NA	NA	NA	TSR_Cortex_enhancer_id.bed	0.07330427324	NA
+1	21	chicken_FAANG_state	2.150503412	1.710675712	27	2	2	34	34	12.7	838	2861	151904	chicken_FAANG_state	NA	NA	NA	NA	NA	TSR_Adipose_enhancer_id.bed	0.1120374226	NA
+1	25	chicken_FAANG_TSR	2.150503412	1.710675712	27	2	2	34	34	12.7	838	2861	151904	chicken_FAANG_TSR Adipose	NA	Adipose	NA	NA	NA	TSR_Adipose_enhancer_id.bed	0.1120374226	NA
+1	30	chicken_FAANG_TSR	1.448848968	1.219016702	97	6	10	25	25	13.7	4234	2791	148508	chicken_FAANG_TSR Cerebellum	NA	Cerebellum	NA	NA	NA	TSR_Cerebellum_enhancer_id.bed	0.2674889209	NA
+1	34	chicken_FAANG_TSR	1.417792241	1.260713294	69	7	8	26	26	13.7	2909	2819	149833	chicken_FAANG_TSR Gizzard	NA	Gizzard	NA	NA	NA	TSR_Gizzard_enhancer_id.bed	0.2674889209	NA
+1	35	chicken_FAANG_TSR	1.838708311	1.420789828	47	5	5	32	32	14	1758	2841	150984	chicken_FAANG_TSR Heart	NA	Heart	NA	NA	NA	TSR_Heart_enhancer_id.bed	0.1420750326	NA
+1	36	chicken_FAANG_TSR	1.352570744	1.194331505	107	8	11	24	24	14.3	4767	2781	147975	chicken_FAANG_TSR Hypothalamus	NA	Hypothalamus	NA	NA	NA	TSR_Hypothalamus_enhancer_id.bed	0.2719789853	NA
+1	48	chicken_FAANG_TSR	2.038772979	1.873586765	19	4	1	39	39	14.7	538	2869	152204	chicken_FAANG_TSR Thymus	NA	Thymus	NA	NA	NA	TSR_Thymus_enhancer_id.bed	0.1120374226	NA

@@ -1,0 +1,50 @@
+	userSet	dbSet	collection	pValueLog	oddsRatio	support	rnkPV	rnkOR	rnkSup	maxRnk	meanRnk	b	c	d	description	cellType	tissue	antibody	treatment	dataSource	filename	qValue	size
+1	1	36	chicken_FAANG_TSR	1.352570744	1.194331505	107	8	11	24	24	14.3	4767	2781	147975	chicken_FAANG_TSR Hypothalamus	NA	Hypothalamus	NA	NA	NA	TSR_Hypothalamus_enhancer_id.bed	0.2719789853	NA
+2	1	30	chicken_FAANG_TSR	1.448848968	1.219016702	97	6	10	25	25	13.7	4234	2791	148508	chicken_FAANG_TSR Cerebellum	NA	Cerebellum	NA	NA	NA	TSR_Cerebellum_enhancer_id.bed	0.2674889209	NA
+3	1	34	chicken_FAANG_TSR	1.417792241	1.260713294	69	7	8	26	26	13.7	2909	2819	149833	chicken_FAANG_TSR Gizzard	NA	Gizzard	NA	NA	NA	TSR_Gizzard_enhancer_id.bed	0.2674889209	NA
+4	1	41	chicken_FAANG_TSR	0.5498123851	1.0815597	67	11	12	27	27	16.7	3282	2821	149460	chicken_FAANG_TSR Liver	NA	Liver	NA	NA	NA	TSR_Liver_enhancer_id.bed	1	NA
+5	1	1	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Adipose	NA	Adipose	NA	NA	NA	Adipose_16_segments.bed	1	NA
+6	1	2	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Bone Marrow	NA	Bone Marrow	NA	NA	NA	BMarrow_16_segments.bed	1	NA
+7	1	3	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Bursa	NA	Bursa	NA	NA	NA	Bursa_16_segments.bed	1	NA
+8	1	4	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Cecum	NA	Cecum	NA	NA	NA	Cecum_16_segments.bed	1	NA
+9	1	5	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Cerebellum	NA	Cerebellum	NA	NA	NA	Cerebellum_16_segments.bed	1	NA
+10	1	6	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Colon	NA	Colon	NA	NA	NA	Colon_16_segments.bed	1	NA
+11	1	7	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Cortex	NA	Cortex	NA	NA	NA	Cortex_16_segments.bed	1	NA
+12	1	8	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Duodenum	NA	Duodenum	NA	NA	NA	Duodenum_16_segments.bed	1	NA
+13	1	9	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Gizzard	NA	Gizzard	NA	NA	NA	Gizzard_16_segments.bed	1	NA
+14	1	10	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Heart	NA	Heart	NA	NA	NA	Heart_16_segments.bed	1	NA
+15	1	11	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Hypothalamus	NA	Hypothalamus	NA	NA	NA	Hypothalamus_16_segments.bed	1	NA
+16	1	12	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Ileum	NA	Ileum	NA	NA	NA	Ileum_16_segments.bed	1	NA
+17	1	13	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Jejunum	NA	Jejunum	NA	NA	NA	Jejunum_16_segments.bed	1	NA
+18	1	14	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Kidney	NA	Kidney	NA	NA	NA	Kidney_16_segments.bed	1	NA
+19	1	15	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Liver	NA	Liver	NA	NA	NA	Liver_16_segments.bed	1	NA
+20	1	16	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Lung	NA	Lung	NA	NA	NA	Lung_16_segments.bed	1	NA
+21	1	17	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Muscle	NA	Muscle	NA	NA	NA	Muscle_16_segments.bed	1	NA
+22	1	18	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Proventriculus	NA	Proventriculus	NA	NA	NA	Provent_16_segments.bed	1	NA
+23	1	19	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Shell Gland	NA	Shell Gland	NA	NA	NA	ShellGland_16_segments.bed	1	NA
+24	1	20	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Spleen	NA	Spleen	NA	NA	NA	Spleen_16_segments.bed	1	NA
+25	1	22	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Testis	NA	Testis	NA	NA	NA	Testis_16_segments.bed	1	NA
+26	1	23	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Thymus	NA	Thymus	NA	NA	NA	Thymus_16_segments.bed	1	NA
+27	1	24	chicken_FAANG_state	0	0	2888	27	27	1	27	18.3	152742	0	0	chicken_FAANG_state Trachea	NA	Trachea	NA	NA	NA	Trachea_16_segments.bed	1	NA
+28	1	32	chicken_FAANG_TSR	2.825066788	1.523541128	61	1	4	28	28	11	2133	2827	150609	chicken_FAANG_TSR Cortex	NA	Cortex	NA	NA	NA	TSR_Cortex_enhancer_id.bed	0.07330427324	NA
+29	1	40	chicken_FAANG_TSR	0.0004394681106	0.6782412292	56	26	21	29	29	25.3	4327	2832	148415	chicken_FAANG_TSR Kidney	NA	Kidney	NA	NA	NA	TSR_Kidney_enhancer_id.bed	1	NA
+30	1	47	chicken_FAANG_TSR	1.030468452	1.223902162	51	9	9	30	30	16	2211	2837	150531	chicken_FAANG_TSR Testis	NA	Testis	NA	NA	NA	TSR_Testis_enhancer_id.bed	0.5075573466	NA
+31	1	45	chicken_FAANG_TSR	0.0165888096	0.7833323676	48	21	19	31	31	23.7	3226	2840	149516	chicken_FAANG_TSR ShellGland	NA	ShellGland	NA	NA	NA	TSR_ShellGland_enhancer_id.bed	1	NA
+32	1	35	chicken_FAANG_TSR	1.838708311	1.420789828	47	5	5	32	32	14	1758	2841	150984	chicken_FAANG_TSR Heart	NA	Heart	NA	NA	NA	TSR_Heart_enhancer_id.bed	0.1420750326	NA
+33	1	28	chicken_FAANG_TSR	0.1624222111	0.9363790438	45	17	17	33	33	22.3	2539	2843	150203	chicken_FAANG_TSR Bursa	NA	Bursa	NA	NA	NA	TSR_Bursa_enhancer_id.bed	1	NA
+34	1	21	chicken_FAANG_state	2.150503412	1.710675712	27	2	2	34	34	12.7	838	2861	151904	chicken_FAANG_state	NA	NA	NA	NA	NA	TSR_Adipose_enhancer_id.bed	0.1120374226	NA
+35	1	25	chicken_FAANG_TSR	2.150503412	1.710675712	27	2	2	34	34	12.7	838	2861	151904	chicken_FAANG_TSR Adipose	NA	Adipose	NA	NA	NA	TSR_Adipose_enhancer_id.bed	0.1120374226	NA
+36	1	31	chicken_FAANG_TSR	0.9590738868	1.302173933	27	10	6	34	34	16.7	1099	2861	151643	chicken_FAANG_TSR Colon	NA	Colon	NA	NA	NA	TSR_Colon_enhancer_id.bed	0.5384212516	NA
+37	1	39	chicken_FAANG_TSR	0.1851955005	0.9388958945	27	16	16	34	34	22	1520	2861	151222	chicken_FAANG_TSR Jejunum	NA	Jejunum	NA	NA	NA	TSR_Jejunum_enhancer_id.bed	1	NA
+38	1	27	chicken_FAANG_TSR	0.06563017089	0.8257115263	27	18	18	34	34	23.3	1726	2861	151016	chicken_FAANG_TSR Brain_common	NA	Brain_common	NA	NA	NA	TSR_Brain_common_enhancer_id.bed	1	NA
+39	1	48	chicken_FAANG_TSR	2.038772979	1.873586765	19	4	1	39	39	14.7	538	2869	152204	chicken_FAANG_TSR Thymus	NA	Thymus	NA	NA	NA	TSR_Thymus_enhancer_id.bed	0.1120374226	NA
+40	1	29	chicken_FAANG_TSR	0.2974882554	1.018350435	17	14	14	40	40	22.7	883	2871	151859	chicken_FAANG_TSR Cecum	NA	Cecum	NA	NA	NA	TSR_Cecum_enhancer_id.bed	1	NA
+41	1	44	chicken_FAANG_TSR	0.0498657478	0.7631512056	17	19	20	40	40	26.3	1176	2871	151566	chicken_FAANG_TSR Provent	NA	Provent	NA	NA	NA	TSR_Provent_enhancer_id.bed	1	NA
+42	1	42	chicken_FAANG_TSR	0.0005433403085	0.5155134903	16	25	24	42	42	30.3	1633	2872	151109	chicken_FAANG_TSR Lung	NA	Lung	NA	NA	NA	TSR_Lung_enhancer_id.bed	1	NA
+43	1	43	chicken_FAANG_TSR	0.001816511556	0.5386252652	14	24	23	43	43	30	1369	2874	151373	chicken_FAANG_TSR Muscle	NA	Muscle	NA	NA	NA	TSR_Muscle_enhancer_id.bed	1	NA
+44	1	33	chicken_FAANG_TSR	0.3331464066	1.066503197	10	13	13	44	44	23.3	496	2878	152246	chicken_FAANG_TSR Duodenum	NA	Duodenum	NA	NA	NA	TSR_Duodenum_enhancer_id.bed	1	NA
+45	1	26	chicken_FAANG_TSR	0.02132548973	0.602477566	8	20	22	45	45	29	701	2880	152041	chicken_FAANG_TSR BMarrow	NA	BMarrow	NA	NA	NA	TSR_BMarrow_enhancer_id.bed	1	NA
+46	1	46	chicken_FAANG_TSR	0.005368338653	0.5084078587	8	23	25	45	45	31	830	2880	151912	chicken_FAANG_TSR Spleen	NA	Spleen	NA	NA	NA	TSR_Spleen_enhancer_id.bed	1	NA
+47	1	49	chicken_FAANG_TSR	0.2580759606	1.004221083	6	15	15	47	47	25.7	316	2882	152426	chicken_FAANG_TSR Trachea	NA	Trachea	NA	NA	NA	TSR_Trachea_enhancer_id.bed	1	NA
+48	1	38	chicken_FAANG_TSR	0.4415280605	1.271824256	5	12	7	48	48	22.3	208	2883	152534	chicken_FAANG_TSR Intestine_common	NA	Intestine_common	NA	NA	NA	TSR_Intestine_common_enhancer_id.bed	1	NA
+49	1	37	chicken_FAANG_TSR	0.008183348953	0.336383018	2	22	26	49	49	32.3	314	2886	152428	chicken_FAANG_TSR Ileum	NA	Ileum	NA	NA	NA	TSR_Ileum_enhancer_id.bed	1	NA
