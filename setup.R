@@ -6,7 +6,10 @@ cran_dependencies <- c(
     'aws.s3',
     'R.utils',
     'ape',
-    'rstudioapi'
+    'rstudioapi',
+    'rphylopic',
+    'ggimage'
+
     )
 
 
@@ -16,7 +19,9 @@ bioc_dependencies <- c(
     'org.Gg.eg.db',
     'BioMartGOGeneSets',
     'TxDb.Ggallus.UCSC.galGal6.refGene',
-    'TxDb.Hsapiens.UCSC.hg38.knownGene'
+    'TxDb.Hsapiens.UCSC.hg38.knownGene',
+    'treeio',
+    'rtracklayer'
     )
 
 for(lib_name in cran_dependencies) {
@@ -36,4 +41,6 @@ if (!require(rphast, quietly = TRUE))
 
 if (!require(rGREAT, quietly = TRUE))
     devtools::install_github("jokergoo/rGREAT")
+
+
 
