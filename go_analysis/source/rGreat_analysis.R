@@ -1,6 +1,5 @@
-#library(rGREAT)
 
-
+# use_biomart = FALSE
 enrichment_clade_go_terms_base <- function(regions_clade, go_ontology, clade,
                                       file_name_prefix, use_biomart) {
 
@@ -37,7 +36,7 @@ enrichment_clade_go_terms_base <- function(regions_clade, go_ontology, clade,
     go_terms_regions_clade_file_path <- file.path(
         go_terms_regions_clade_base_path, go_terms_regions_clade_file_name)
 
-    write.table(go_terms_regions_clade,
+    write.table(go_terms_regions_clade$enrichment,
                 file = go_terms_regions_clade_file_path,
                 sep = ' \t', quote = FALSE,
                 col.names = TRUE, row.names = FALSE)
@@ -46,6 +45,9 @@ enrichment_clade_go_terms_base <- function(regions_clade, go_ontology, clade,
 
 }
 
+# regions_clade <- nc_acc_mammals
+# clade <- 'mammals'
+# file_name_prefix <- 'nc_acc_'
 enrichment_clade_go_terms <- function(regions_clade, go_ontology, clade,
                                       file_name_prefix) {
 
@@ -62,23 +64,15 @@ enrichment_clade_go_terms <- function(regions_clade, go_ontology, clade,
 
 }
 
-# go_terms_regions_clade_ls <- go_terms_nc_acc_cars_all
-# hits_stats_sim_ls <- hits_stats_sim
-# clade <- 'cars'
+# go_terms_regions_clade <- go_terms_regions_clade_ls[['default']]$enrichment
+# hits_stats_sim <- hits_stats_sim_ls
+# clade <- 'mammals'
 # file_name_prefix <- 'nc_acc_'
 # use_biomart <- FALSE
-significant_clade_go_terms_base <- function(go_terms_regions_clade_ls,
-                            hits_stats_sim_ls, go_ontology, clade,
+
+significant_clade_go_terms_base <- function(go_terms_regions_clade,
+                            hits_stats_sim, go_ontology, clade,
                             file_name_prefix, use_biomart) {
-
-
-    for(item_name  in names(go_terms_regions_clade_ls)) {
-
-        print(item_name)
-
-        go_terms_regions_clade <- go_terms_regions_clade_ls[[item_name]]
-        hits_stats_sim <- hits_stats_sim_ls[[item_name]]
-
 
         # regions
         go_terms_stat_values <- go_terms_regions_clade$observed_region_hits
@@ -91,7 +85,6 @@ significant_clade_go_terms_base <- function(go_terms_regions_clade_ls,
             p.adjust(go_terms_regions_clade$regions_empirical_p_value,
                      method="BH")
 
-        ?p.adjust
 
         # min(go_terms_regions_clade$regions_empirical_p_adjust)
 
@@ -119,8 +112,8 @@ significant_clade_go_terms_base <- function(go_terms_regions_clade_ls,
         }
 
         go_terms_regions_clade_file_path <- file.path(out_base_path,
-                                                      paste0(out_file_name_base,
-                                                             '_all_empiricalp.csv'))
+                                                paste0(out_file_name_base,
+                                                '_all_empirical_p_adjust.csv'))
         write.table(go_terms_regions_clade,
                     file = go_terms_regions_clade_file_path,
                     sep = ' \t', quote = FALSE,
@@ -132,7 +125,8 @@ significant_clade_go_terms_base <- function(go_terms_regions_clade_ls,
         out_file_name <- paste0(out_file_name_base,
                                 '_regions_empirical_p_adjust.csv')
         out_file_path <- file.path(out_base_path, out_file_name)
-        mask_sign <- go_terms_regions_clade$regions_empirical_p_adjust < 0.05
+        mask_sign <- (go_terms_regions_clade$regions_empirical_p_adjust < 0.05) &
+            (go_terms_regions_clade$p_adjust < 0.05)
         # sum(mask_sign)
         result_regions <- go_terms_regions_clade[mask_sign, ]
         write.table(result_regions, file = out_file_path,
@@ -143,31 +137,31 @@ significant_clade_go_terms_base <- function(go_terms_regions_clade_ls,
         out_file_name <- paste0(out_file_name_base,
                                 '_genes_empirical_p_adjust.csv')
         out_file_path <- file.path(out_base_path, out_file_name)
-        mask_sign <- go_terms_regions_clade$genes_empirical_p_adjust < 0.05
+        mask_sign <- (go_terms_regions_clade$genes_empirical_p_adjust < 0.05) &
+            (go_terms_regions_clade$p_adjust_hyper < 0.05)
         # sum(mask_sign, na.rm = TRUE)
-        result_regions <- go_terms_regions_clade[mask_sign, ]
-        write.table(result_regions, file = out_file_path,
+        result_genes <- go_terms_regions_clade[mask_sign, ]
+        write.table(result_genes, file = out_file_path,
                     sep = '\t', quote = FALSE,
                     col.names = TRUE, row.names = FALSE)
 
-    }
-
-
-
-
 }
 
+# go_terms_regions_clade_ls <- go_terms_nc_acc_mammals_all
+# hits_stats_sim_ls <- hits_stats_sim
+# clade <- 'mammals'
+# file_name_prefix <- 'nc_acc_'
 significant_clade_go_terms <- function(go_terms_regions_clade_ls,
                                        hits_stats_sim_ls, go_ontology,
                                        clade, file_name_prefix) {
 
-    significant_clade_go_terms_base(go_terms_regions_clade_ls,
-                                    hits_stats_sim_ls, go_ontology, clade,
-                                    file_name_prefix, use_biomart = FALSE)
+    significant_clade_go_terms_base(go_terms_regions_clade_ls[['default']]$enrichment,
+                                    hits_stats_sim_ls[['default']], go_ontology,
+                                    clade, file_name_prefix, use_biomart = FALSE)
 
-    significant_clade_go_terms_base(go_terms_regions_clade_ls,
-                                    hits_stats_sim_ls, go_ontology, clade,
-                                    file_name_prefix, use_biomart = TRUE)
+    significant_clade_go_terms_base(go_terms_regions_clade_ls[['biomart']]$enrichment,
+                                    hits_stats_sim_ls[['biomart']], go_ontology,
+                                    clade, file_name_prefix, use_biomart = TRUE)
 
 
 }
@@ -198,16 +192,11 @@ simulation_stats_clade_go_terms <- function(nc_cons_clade, nc_acc_clade, go_onto
 
 
 
-
+# data_base_path <- "/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/go_analysis/data"
 main_mammals <- function() {
 
-    #go_ontology <- 'mf'
-    # go_ontology <- 'bp'
-    #go_ontology <- 'cc'
+    for(go_ontology in c('bp', 'mf', 'cc')) {
 
-    #for(go_ontology in c('bp', 'mf', 'cc')) {
-
-        go_ontology <- 'bp'
 
         nc_cons_mammals_file_name <- '10_mammals_conserved_noncoding_elements.bed'
         nc_cons_mammals_file_path <- file.path(data_base_path, 'input', nc_cons_mammals_file_name)
@@ -228,7 +217,7 @@ main_mammals <- function() {
         #go_terms_nc_cons_mammals_sign <- conserved_nc_mammals_go_terms(nc_cons_mammals, go_ontology, filter = 'bin005')
 
 
-        # 3. calculate rgreat for acc elements
+        # 2. calculate rgreat for acc elements
         go_terms_nc_acc_mammals_all <- enrichment_clade_go_terms(nc_acc_mammals,
                                                 go_ontology, 'mammals', 'nc_acc_')
 
@@ -237,21 +226,20 @@ main_mammals <- function() {
         #hist(go_terms_nc_acc_mammals_all$p_adjust)
         #hist(go_terms_nc_acc_mammals_all$p_adjust_hyper)
 
-        # 4. empirical p values for acc elements
+        # 3. empirical p values for acc elements
         significant_clade_go_terms(go_terms_nc_acc_mammals_all, hits_stats_sim,
                                    go_ontology, 'mammals', 'nc_acc_')
         # sum(mask_sign, na.rm = TRUE)
-    # }
+    }
 
 }
 
 main_aves <- function() {
 
-    # go_ontology <- 'bp'
 
-    #for(go_ontology in c('bp', 'mf', 'cc')) {
+    for(go_ontology in c('bp', 'mf', 'cc')) {
 
-        go_ontology <- 'mf'
+
 
         nc_cons_aves_file_name <- '12_aves_conserved_noncoding_elements.bed'
         nc_cons_aves_file_path <- file.path(data_base_path, 'input', nc_cons_aves_file_name)
@@ -277,7 +265,7 @@ main_aves <- function() {
         significant_clade_go_terms(go_terms_nc_acc_aves_all, hits_stats_sim,
                                    go_ontology, 'aves', 'nc_acc_')
 
-#    }
+    }
 
 
 }
@@ -291,7 +279,7 @@ main_cars <- function() {
 
     #for(go_ontology in c('bp', 'mf', 'cc')) {
 
-    go_ontology <- 'cc'
+    go_ontology <- 'bp'
 
     nc_cons_mammals_file_name <- '10_mammals_conserved_noncoding_elements.bed'
     nc_cons_mammals_file_path <- file.path(data_base_path, 'input', nc_cons_mammals_file_name)

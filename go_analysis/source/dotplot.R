@@ -95,8 +95,8 @@ dot_plot_clade_ontology <- function(base_path, go_ontology, clade) {
 main <- function() {
 
     base_path <<- '/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/go_analysis/data/output/go_terms'
+
     clade <- 'mammals'
-    # clade <- 'aves'
 
     for(go_ontology in c('bp', 'cc', 'mf')) {
 
@@ -104,14 +104,19 @@ main <- function() {
         save_plot(plot_to_save, go_ontology, clade)
     }
 
+    clade <- 'aves'
 
+    for(go_ontology in c('bp', 'cc', 'mf')) {
+
+        plot_to_save <- dot_plot_clade_ontology(base_path, go_ontology, clade)
+        save_plot(plot_to_save, go_ontology, clade)
+    }
 
 }
 
 
 
 # https://stackoverflow.com/questions/76395098/dotplot-of-enrichgo-results-with-all-of-the-ontology-terms-on-same-plot-for-comp
-# ggplot(top_enriched,
 #        aes(x = GeneRatio, y = Description, color = p.adjust, size = Count)) +
 #     geom_point() +
 #     facet_grid(Category ~ .) +

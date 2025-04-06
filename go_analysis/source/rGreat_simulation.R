@@ -121,13 +121,14 @@ base_hits_summary <- function(files_paths, stat_col_name, out_file_name, clade,
     }
 
     out_file_path <- file.path(out_base_path, out_file_name)
+    out_file_path_gz <- file.path(out_base_path, paste0(out_file_name, '.gz'))
 
     if(! file.exists(out_file_path)) {
 
         # TODO; paralelizar esto
         rows_from_files <- lapply(seq(1, length(files_paths)), function(i) {
 
-            print(i)
+            #print(i)
             file_path <- files_paths[i]
             #data <- read.delim(file_path)
             # read compressed files:
@@ -152,7 +153,7 @@ base_hits_summary <- function(files_paths, stat_col_name, out_file_name, clade,
         result <- data.frame(result_mtx)
         colnames(result) <- c('sim_id', go_terms_all)
         for (i in seq(1, length(rows_from_files))) {
-            print(i)
+            #print(i)
             row_data <- rows_from_files[[i]]
             result[i, names(row_data)] <- row_data
         }
@@ -164,9 +165,12 @@ base_hits_summary <- function(files_paths, stat_col_name, out_file_name, clade,
         write.table(result, out_file_path, sep = '\t',
                     col.names = TRUE, row.names = FALSE)
 
+        R.utils::gzip(filename = out_file_path, destname = out_file_path_gz,
+                      ext="gz", remove = TRUE, overwrite = TRUE)
+
     } else {
 
-        result <- read.delim(out_file_path, sep = '\t', header = TRUE)
+        result <- read.delim(out_file_path_gz, sep = '\t', header = TRUE)
     }
 
     return(result)
@@ -177,10 +181,20 @@ base_hits_summary <- function(files_paths, stat_col_name, out_file_name, clade,
 observed_genes_hits_summary <- function(files_paths, go_ontology, clade,
                                         use_biomart = FALSE) {
 
+    if(use_biomart) {
+        folder_name <- 'biomart'
+    } else {
+        folder_name <- 'default'
+    }
+
     stat_col_name <- 'observed_gene_hits'
     out_file_name <- paste0('go_terms_observed_genes_hits_', go_ontology, '.csv')
     out_file_path <- file.path(data_base_path, 'output', 'simulation',
-                               clade, 'whole_genome_summary', out_file_name)
+                               clade, 'whole_genome_summary', folder_name,
+                               paste0(out_file_name, '.gz'))
+
+    print(out_file_path)
+
     if(! file.exists(out_file_path)) {
         if(anyNA(files_paths)) {
             result <- data.frame()
@@ -197,12 +211,19 @@ observed_genes_hits_summary <- function(files_paths, go_ontology, clade,
 observed_regions_hits_summary <- function(files_paths, go_ontology, clade,
                                           use_biomart = FALSE) {
 
+    if(use_biomart) {
+        folder_name <- 'biomart'
+    } else {
+        folder_name <- 'default'
+    }
+
     stat_col_name <- 'observed_region_hits'
     out_file_name <- paste0('go_terms_observed_region_hits_', go_ontology, '.csv')
     out_file_path <- file.path(data_base_path, 'output', 'simulation',
-                               clade, 'whole_genome_summary', out_file_name)
+                               clade, 'whole_genome_summary', folder_name,
+                               paste0(out_file_name, '.gz'))
 
-    # TODO: puede estar en un .gz
+    print(out_file_path)
 
     if(! file.exists(out_file_path)) {
         if(anyNA(files_paths)) {
@@ -213,6 +234,7 @@ observed_regions_hits_summary <- function(files_paths, go_ontology, clade,
                                     clade, use_biomart)
         }
     } else {
+
         result <- read.delim(out_file_path, sep = '\t', header = TRUE)
     }
 
