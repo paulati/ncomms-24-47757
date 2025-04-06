@@ -192,8 +192,10 @@ simulation_stats_clade_go_terms <- function(nc_cons_clade, nc_acc_clade, go_onto
 
 
 
-# data_base_path <- "/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/go_analysis/data"
+
 main_mammals <- function() {
+
+    data_base_path <<- "/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/go_analysis/data"
 
     for(go_ontology in c('bp', 'mf', 'cc')) {
 
@@ -236,6 +238,7 @@ main_mammals <- function() {
 
 main_aves <- function() {
 
+    data_base_path <<- "/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/go_analysis/data"
 
     for(go_ontology in c('bp', 'mf', 'cc')) {
 

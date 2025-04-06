@@ -138,12 +138,8 @@ combine_results_annotations <- function(clade, ontology) {
 }
 
 
+main_base <- function(clade) {
 
-main <- function() {
-
-    data_base_path <<- '/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/go_analysis/data/output/go_terms'
-    # clade <- 'aves'
-    clade <- 'mammals'
     for (ontology in c('bp', 'mf', 'cc')) {
         print(ontology)
         data_file_path_1 <- combine_results_regions(clade, ontology)
@@ -156,5 +152,17 @@ main <- function() {
         print(nrow(data_2))
         print(nrow(data_1) == nrow(data_2))
     }
+}
+
+
+main <- function() {
+
+    data_base_path <<- '/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/go_analysis/data/output/go_terms'
+
+    clade <- 'mammals'
+    main_base(clade)
+
+    clade <- 'aves'
+    main_base(clade)
 
 }
