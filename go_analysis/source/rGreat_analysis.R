@@ -1,5 +1,6 @@
 
 # use_biomart = FALSE
+
 enrichment_clade_go_terms_base <- function(regions_clade, go_ontology, clade,
                                       file_name_prefix, use_biomart) {
 
@@ -65,11 +66,10 @@ enrichment_clade_go_terms <- function(regions_clade, go_ontology, clade,
 }
 
 # go_terms_regions_clade <- go_terms_regions_clade_ls[['default']]$enrichment
-# hits_stats_sim <- hits_stats_sim_ls
-# clade <- 'mammals'
+# hits_stats_sim <- hits_stats_sim_ls[['default']]
+# clade <- 'cars'
 # file_name_prefix <- 'nc_acc_'
-# use_biomart <- FALSE
-
+# use_biomart <- TRUE
 significant_clade_go_terms_base <- function(go_terms_regions_clade,
                             hits_stats_sim, go_ontology, clade,
                             file_name_prefix, use_biomart) {
@@ -147,10 +147,11 @@ significant_clade_go_terms_base <- function(go_terms_regions_clade,
 
 }
 
-# go_terms_regions_clade_ls <- go_terms_nc_acc_mammals_all
+# go_terms_regions_clade_ls <- go_terms_nc_acc_cars_all
 # hits_stats_sim_ls <- hits_stats_sim
-# clade <- 'mammals'
+# clade <- 'cars'
 # file_name_prefix <- 'nc_acc_'
+
 significant_clade_go_terms <- function(go_terms_regions_clade_ls,
                                        hits_stats_sim_ls, go_ontology,
                                        clade, file_name_prefix) {
@@ -242,8 +243,6 @@ main_aves <- function() {
 
     for(go_ontology in c('bp', 'mf', 'cc')) {
 
-
-
         nc_cons_aves_file_name <- '12_aves_conserved_noncoding_elements.bed'
         nc_cons_aves_file_path <- file.path(data_base_path, 'input', nc_cons_aves_file_name)
         file.exists(nc_cons_aves_file_path)
@@ -276,38 +275,33 @@ main_aves <- function() {
 
 main_cars <- function() {
 
-    #go_ontology <- 'mf'
-    # go_ontology <- 'bp'
-    #go_ontology <- 'cc'
+    data_base_path <<- "/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/go_analysis/data"
 
-    #for(go_ontology in c('bp', 'mf', 'cc')) {
+    for(go_ontology in c('bp', 'mf', 'cc')) {
 
-    go_ontology <- 'bp'
+        nc_cons_mammals_file_name <- '10_mammals_conserved_noncoding_elements.bed'
+        nc_cons_mammals_file_path <- file.path(data_base_path, 'input', nc_cons_mammals_file_name)
+        file.exists(nc_cons_mammals_file_path)
+        nc_cons_mammals <- read.delim(nc_cons_mammals_file_path, sep = ' ', header = TRUE)
 
-    nc_cons_mammals_file_name <- '10_mammals_conserved_noncoding_elements.bed'
-    nc_cons_mammals_file_path <- file.path(data_base_path, 'input', nc_cons_mammals_file_name)
-    file.exists(nc_cons_mammals_file_path)
-    nc_cons_mammals <- read.delim(nc_cons_mammals_file_path, sep = ' ', header = TRUE)
+        # 1. simulation data:
+        nc_acc_cars_file_name <- 'supp14_ncCAR_hg38.bed'
+        nc_acc_cars_file_path <- file.path(data_base_path, 'input', nc_acc_cars_file_name)
+        file.exists(nc_acc_cars_file_path)
+        nc_acc_cars <- read.delim(nc_acc_cars_file_path, sep = '\t', header = TRUE)
 
-    # 1. simulation data:
-    nc_acc_cars_file_name <- 'supp14_ncCAR_hg38.bed'
-    nc_acc_cars_file_path <- file.path(data_base_path, 'input', nc_acc_cars_file_name)
-    file.exists(nc_acc_cars_file_path)
-    nc_acc_cars <- read.delim(nc_acc_cars_file_path, sep = '\t', header = TRUE)
+        hits_stats_sim <- simulation_stats_clade_go_terms(nc_cons_mammals,
+                                                          nc_acc_cars, go_ontology, 'cars')
 
-    hits_stats_sim <- simulation_stats_clade_go_terms(nc_cons_mammals,
-                                                      nc_acc_cars, go_ontology, 'cars')
-
-    # 3. calculate rgreat for acc elements
-    go_terms_nc_acc_cars_all <- enrichment_clade_go_terms(nc_acc_cars,
-                                            go_ontology, 'cars', 'nc_acc_')
+        # 3. calculate rgreat for acc elements
+        go_terms_nc_acc_cars_all <- enrichment_clade_go_terms(nc_acc_cars,
+                                                go_ontology, 'cars', 'nc_acc_')
 
 
-    # 4. empirical p values for acc elements
-    significant_clade_go_terms(go_terms_nc_acc_cars_all, hits_stats_sim,
-                               go_ontology, 'cars', 'nc_acc_')
-    # }
-
+        # 4. empirical p values for acc elements
+        significant_clade_go_terms(go_terms_nc_acc_cars_all, hits_stats_sim,
+                                   go_ontology, 'cars', 'nc_acc_')
+    }
 
 }
 
