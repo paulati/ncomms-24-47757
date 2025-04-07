@@ -5,9 +5,9 @@
 combine_results_base <- function(clade, ontology, file_name_biomart,
                                  file_name_default, out_file_name) {
 
-    data_base_path_default <- file.path(data_base_path,
+    data_base_path_default <- file.path(go_terms_data_base_path,
                                     clade, 'rgreat_sim_significant', 'default')
-    data_base_path_biomart <- file.path(data_base_path,
+    data_base_path_biomart <- file.path(go_terms_data_base_path,
                                     clade, 'rgreat_sim_significant', 'biomart')
 
     file_path_default <- file.path(
@@ -88,7 +88,7 @@ combine_results_base <- function(clade, ontology, file_name_biomart,
 
     }
 
-    out_base_path <- file.path(data_base_path, clade, 'rgreat_sim_significant',
+    out_base_path <- file.path(go_terms_data_base_path, clade, 'rgreat_sim_significant',
                                'union')
     if(!dir.exists(out_base_path)) {
         dir.create(out_base_path, recursive = TRUE, showWarnings = FALSE)
@@ -157,7 +157,7 @@ main_base <- function(clade) {
 
 main <- function() {
 
-    data_base_path <<- '/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/go_analysis/data/output/go_terms'
+    go_terms_data_base_path <<- '/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/go_analysis/data/output/go_terms'
 
     clade <- 'mammals'
     main_base(clade)

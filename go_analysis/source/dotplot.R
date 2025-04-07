@@ -1,7 +1,7 @@
 
 save_plot <- function(p, go_ontology, clade) {
 
-    plot_base_path <- file.path(base_path, clade, 'dot_plot')
+    plot_base_path <- file.path(go_terms_data_base_path, clade, 'dot_plot')
     if(! dir.exists(plot_base_path)) {
         dir.create(plot_base_path, recursive = TRUE, showWarnings = FALSE)
     }
@@ -17,9 +17,9 @@ save_plot <- function(p, go_ontology, clade) {
 
 }
 
-dot_plot_clade_ontology <- function(base_path, go_ontology, clade) {
+dot_plot_clade_ontology <- function(go_terms_data_base_path, go_ontology, clade) {
 
-    data_base_path <- file.path(base_path, clade, 'rgreat_sim_significant',
+    data_base_path <- file.path(go_terms_data_base_path, clade, 'rgreat_sim_significant',
                                 'union')
     file_name <- paste0('nc_acc_', clade, '_go', go_ontology,
                         '_regions_empirical_p_adjust_annotated_union.csv')
@@ -94,13 +94,13 @@ dot_plot_clade_ontology <- function(base_path, go_ontology, clade) {
 
 main <- function() {
 
-    base_path <<- '/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/go_analysis/data/output/go_terms'
+    go_terms_data_base_path <<- '/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/go_analysis/data/output/go_terms'
 
     clade <- 'mammals'
 
     for(go_ontology in c('bp', 'cc', 'mf')) {
 
-        plot_to_save <- dot_plot_clade_ontology(base_path, go_ontology, clade)
+        plot_to_save <- dot_plot_clade_ontology(go_terms_data_base_path, go_ontology, clade)
         save_plot(plot_to_save, go_ontology, clade)
     }
 
@@ -108,7 +108,7 @@ main <- function() {
 
     for(go_ontology in c('bp', 'cc', 'mf')) {
 
-        plot_to_save <- dot_plot_clade_ontology(base_path, go_ontology, clade)
+        plot_to_save <- dot_plot_clade_ontology(go_terms_data_base_path, go_ontology, clade)
         save_plot(plot_to_save, go_ontology, clade)
     }
 
