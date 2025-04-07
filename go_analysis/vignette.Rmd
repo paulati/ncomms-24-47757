@@ -62,7 +62,7 @@ source(file.path(script_base_path, 'dotplot.R'))
 
 ```
 
-Steps 1 to 3 are performed in function `main_mammals` in `rGreat_analysis.R`
+Steps 1 to 3 are performed in function `main_mammals` in `./source/rGreat_analysis.R`
 
 ### Step 1
 
@@ -111,7 +111,7 @@ Filter significant GO terms from `rGREAT` results on non-coding accelerated elem
 
 Associate regions to genes using `rGREAT`
 
-The following code is part of the function `main_mammals` in `rGREAT_regions_in_genes.R`
+The following code is part of the function `main_mammals` in `./source/rGREAT_regions_in_genes.R`
 
 ```{r gene_annotation, echo = T, results = 'hide', message = FALSE}
 
@@ -133,7 +133,7 @@ The following code is part of the function `main_mammals` in `rGREAT_regions_in_
 
 Format result tables.
 
-The following code is part of the function `main` in `rGreat_results.R`
+The following code is part of the function `main` in `./source/rGreat_results.R`
 
 ```{r format}
     clade <- 'mammals'
@@ -155,7 +155,7 @@ The following code is part of the function `main` in `rGreat_results.R`
 
 Represent top 30 GO enrichemnt result in a dot plot.
 
-The following code is part of the function `main` in `dotplot.R`
+The following code is part of the function `main` in `./source/dotplot.R`
 
 ```{r dotplot}
     
