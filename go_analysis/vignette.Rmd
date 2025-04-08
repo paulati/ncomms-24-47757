@@ -1,11 +1,12 @@
 ---
-title: "GO enrichment analysis using `rGREAT` on non-coding accelerated elements"
-author: Paula Beati
+title: "GO enrichment analysis of non-coding accelerated elements using rGREAT" 
+author: "Paula Beati"
 date: "April 7, 2025"
 output:
   html_document:
-    number_sections: false
-    css: "style.css"
+    number_sections: no
+    css: style.css
+  pdf_document: default
 ---
 
 # Go term analysis
@@ -62,6 +63,10 @@ source(file.path(script_base_path, 'dotplot.R'))
 
 ```
 
+We want to evaluate go term enrichment for the set of regions associated with accelerated elements. We have an extra issue trying to know if the significance is associated with acceleration or if it is just a consequence of enrichment in the conserved regions set. (Remember that accelerated regions are a subset of conserved regions.)
+
+The strategy to answer this question is to compare results obtained for the set of accelerated regions with those obtained from equivalent sets of conserved regions. We sampled conserved regions, building 5,000 sets with the same size and chromosome distribution as the accelerated regions set, and evaluated rGREAT on each of these sets.
+
 Steps 1 to 3 are performed in function `main_mammals` in `./source/rGreat_analysis.R`
 
 ### Step 1
@@ -72,14 +77,18 @@ Load or generate `rGREAT` evaluation for random sets of non-coding conserved ele
     go_ontology <- 'bp'
 
     nc_cons_mammals_file_name <- '10_mammals_conserved_noncoding_elements.bed'
-    nc_cons_mammals_file_path <- file.path(data_base_path, 'input', nc_cons_mammals_file_name)
+    nc_cons_mammals_file_path <- file.path(data_base_path, 'input', 
+                                           nc_cons_mammals_file_name)
     file.exists(nc_cons_mammals_file_path)
-    nc_cons_mammals <- read.delim(nc_cons_mammals_file_path, sep = ' ', header = TRUE)
+    nc_cons_mammals <- read.delim(nc_cons_mammals_file_path, sep = ' ', 
+                                  header = TRUE)
 
     nc_acc_mammals_file_name <- '13_non_coding_acc_regions_mammals_ranked.bed'
-    nc_acc_mammals_file_path <- file.path(data_base_path, 'input', nc_acc_mammals_file_name)
+    nc_acc_mammals_file_path <- file.path(data_base_path, 'input', 
+                                          nc_acc_mammals_file_name)
     file.exists(nc_acc_mammals_file_path)
-    nc_acc_mammals <- read.delim(nc_acc_mammals_file_path, sep = ' ', header = TRUE)
+    nc_acc_mammals <- read.delim(nc_acc_mammals_file_path, sep = ' ', 
+                                 header = TRUE)
 
     hits_stats_sim <- simulation_stats_clade_go_terms(nc_cons_mammals,
                                         nc_acc_mammals, go_ontology, 'mammals')
@@ -98,7 +107,11 @@ Evaluate `rGREAT` on non-coding accelerated elements.
 
 ### Step 3
 
-Filter significant GO terms from `rGREAT` results on non-coding accelerated elements.
+The empirical p-value for each GO term in the accelerated region set is computed as the proportion of 'observed_regions_hits' values in its distribution within conserved elements that are greater than the obtained 'observed_regions_hits' value for the accelerated region set. These p-values are corrected for multiple comparisons, the Benjamini-Hochberg method was applied to compute approximate false discovery rates (FDRs) for each term.
+
+We considered a term significant when its adjusted p-value returned from rGREAT was less than 0.05 and the adjusted empirical p-value was less than 0.05.
+
+In this step we filter significant GO terms from `rGREAT` results on non-coding accelerated elements.
 
 ```{r significance, message = FALSE}
     # 3. empirical p values for acc elements
@@ -109,7 +122,9 @@ Filter significant GO terms from `rGREAT` results on non-coding accelerated elem
 
 ### Step 4
 
-Associate regions to genes using `rGREAT`
+To calculate the proportion of genes associated with accelerated regions and annotated genes in each term, we combined the genes data with the results from `rGREAT`.
+
+The regions are associated with genes using `rGREAT:::getRegionGeneAssociations`
 
 The following code is part of the function `main_mammals` in `./source/rGREAT_regions_in_genes.R`
 
@@ -120,11 +135,13 @@ The following code is part of the function `main_mammals` in `./source/rGREAT_re
 
     go_annotation_type <- 'biomart'
     result_file_path <- bind_genes_data(clade, ontology, go_annotation_type)
-    result_data_biomart <- read.delim(result_file_path, sep = '\t', header = TRUE)
+    result_data_biomart <- read.delim(result_file_path, sep = '\t', 
+                                      header = TRUE)
 
     go_annotation_type <- 'default'
     result_file_path <- bind_genes_data(clade, ontology, go_annotation_type)
-    result_data_default <- read.delim(result_file_path, sep = '\t', header = TRUE)
+    result_data_default <- read.delim(result_file_path, sep = '\t', 
+                                      header = TRUE)
 
 
 ```
@@ -173,8 +190,30 @@ The following code is part of the function `main` in `./source/dotplot.R`
 
     plot_base_path <- file.path(go_terms_data_base_path, clade, 'dot_plot')
     plot_file_name <- paste0('acc_nc_', clade, '_go', go_ontology, 
-                             '_top30fe.pdf')
+                             '_top30fe.svg')
     plot_file_path <- file.path(plot_base_path, plot_file_name)
     
     knitr::include_graphics(plot_file_path) 
 ```
+
+## Summary
+
+The complete pipeline for mammals <GO:BP>, <GO:MF>, <GO:CC> is as follows:
+
+1.  `./source/rGreat_analysis.R`, `main_mammals()`
+
+2.  `./source/rGREAT_regions_in_genes.R`, `main_mammals()`
+
+3.  `./source/rGreat_results.R`, `main_mammals()`
+
+4.  `./source/dotplot.R`, `main_mammals()`
+
+The complete pipeline for aves <GO:BP>, <GO:MF>, <GO:CC> is as follows:
+
+1.  `./source/rGreat_analysis.R`, `main_aves()`
+
+2.  `./source/rGREAT_regions_in_genes.R`, `main_aves()`
+
+3.  `./source/rGreat_results.R`, `main_aves()`
+
+4.  `./source/dotplot.R`, `main_aves()`

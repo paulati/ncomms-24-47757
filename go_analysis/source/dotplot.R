@@ -91,20 +91,7 @@ dot_plot_clade_ontology <- function(go_terms_data_base_path, go_ontology, clade)
 
 }
 
-
-main <- function() {
-
-    go_terms_data_base_path <<- '/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/go_analysis/data/output/go_terms'
-
-    clade <- 'mammals'
-
-    for(go_ontology in c('bp', 'cc', 'mf')) {
-
-        plot_to_save <- dot_plot_clade_ontology(go_terms_data_base_path, go_ontology, clade)
-        save_plot(plot_to_save, go_ontology, clade)
-    }
-
-    clade <- 'aves'
+main_base <- function(clade) {
 
     for(go_ontology in c('bp', 'cc', 'mf')) {
 
@@ -113,6 +100,28 @@ main <- function() {
     }
 
 }
+
+
+main_mamals <- function() {
+
+    go_terms_data_base_path <<- '/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/go_analysis/data/output/go_terms'
+
+    clade <- 'mammals'
+
+    main_base(clade)
+
+}
+
+main_aves <- function() {
+
+    go_terms_data_base_path <<- '/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/go_analysis/data/output/go_terms'
+
+    clade <- 'aves'
+
+    main_base(clade)
+
+}
+
 
 
 

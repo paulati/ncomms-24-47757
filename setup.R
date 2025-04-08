@@ -42,5 +42,6 @@ if (!require(rphast, quietly = TRUE))
 if (!require(rGREAT, quietly = TRUE))
     devtools::install_github("jokergoo/rGREAT")
 
-
-
+# markdown pdf:
+# install.packages(c('tinytex', 'rmarkdown'))
+# tinytex::install_tinytex()
