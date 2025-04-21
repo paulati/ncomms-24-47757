@@ -245,7 +245,7 @@ plot_tree_mammals <- function() {
 
 main <- function() {
 
-    base_path <<- '/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/phylogenetic_tree'
+    base_path <<- '/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/phylogenetic_tree_plot'
     data_base_path <<- file.path(base_path, 'data')
 
     # save_images()
