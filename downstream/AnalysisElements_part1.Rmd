@@ -1,0 +1,464 @@
+---
+title: "AnalysisElements"
+author: "Anabella Trigila"
+date: "7/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+# if (!requireNamespace("renv", quietly = TRUE)) {
+#   install.packages("renv")
+# }
+# 
+# if (!renv::status()$synchronized) {
+#   renv::restore()
+# }
+
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(IRanges)
+library(GenomicRanges)
+library(ggplot2)
+
+base_path <- '/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/downstream'
+data_base_path <- file.path(base_path, 'data')
+out_base_path <- file.path(base_path, 'outputs')
+
+```
+
+# Introduction
+
+High-throughput studies have relied on comparing sequence conservation on genomes of several species to identify segments evolving at differential rates.  Most studies have focused on terminal branches. However, the genetic basis behind basal macroevolutionary novelties has been little studied.  We were interested in exploring the basal genetic changes behind the evolution of two groups of vertebrates in comparison to their ancestors: birds and mammals. 
+
+# Methods
+## Discovery of conserved elements
+
+Vertebrate conserved elements used as the background in the acceleration studies were calculated using phastCons expected.length = 45, target.coverage = 0.3, rho = 0.3 for a sub-alignment containing the following species: allMis1, cheMyd1, chrPic2, pelSin1, apaSpi1, anoCar2, xenTro7 and latCha1. Each of these elements were merged into regions with a distance less than 20bp and with a minimum size of 100bp.
+
+```{r read conserved elements}
+
+conserved_mammals_file_path <- file.path(data_base_path, "1. mammals_phastCons",
+                    "intersection_modneu_phastCons100way_sarcopterygii_mammals", 
+                    "all_mammals_amniotes_phastCons.bed")
+
+conserved_mammals <- read.delim(conserved_mammals_file_path, sep = ' ', 
+                                header = FALSE)
+
+conserved_mammals <- makeGRangesFromDataFrame(conserved_mammals,
+                                              seqnames.field = "V1",
+                                              start.field = "V2",
+                                              end.field = "V3") %>%
+  reduce(min.gapwidth = 20L)
+
+conserved_mammals <- conserved_mammals[conserved_mammals@ranges@width > 100]
+
+
+conserved_aves_file_path <- file.path(data_base_path, "2. aves_phastCons",
+                    "intersection", 
+                    "all_aves_amniotes_phastCons.bed")
+
+conserved_aves <- read.delim(conserved_aves_file_path, sep = '\t', 
+                                header = FALSE)
+
+conserved_aves <- conserved_aves %>% 
+  makeGRangesFromDataFrame(seqnames.field = "V1", start.field = "V2",
+                           end.field = "V3") %>% reduce(min.gapwidth = 20L)
+
+conserved_aves <- conserved_aves[conserved_aves@ranges@width > 100]
+
+# Write to outputs
+conserved_mammals_out_path <- file.path(out_base_path, 
+                                        "1_conserved_mammals_phastcons.bed")
+write.table(conserved_mammals, file = conserved_mammals_out_path)
+conserved_aves_out_path <- file.path(out_base_path, 
+                                        "2_conserved_aves_phastcons.bed")
+write.table(conserved_aves, file = conserved_aves_out_path)
+
+```
+The total number of background conserved elements used for the calculation of accelerated elements for mammals was `r length(conserved_mammals)` and  for birds was `r length(conserved_aves)`. 
+
+## Calculation of accelerated elements
+
+I defined a 'functional candidate' as a conserved element with accelerated regions (either mammalian or avian), with a minimum size of 100bp.  The signatures of acceleration could be found in both coding and non-coding conserved elements.
+
+```{r read acc elements table}
+
+mammals_elements_file_path <- file.path(data_base_path, 
+                        "5. mammals accelerated candidate functional regions",
+                        "mammals_acc_candidate_func_elements_all.txt")
+
+mammals_elements <- read.delim(mammals_elements_file_path)
+mammals_elements <- mammals_elements %>%
+  dplyr::select(phastCons_seqnames, phastCons_start, phastCons_end, phastCons_id) %>% 
+  unique.data.frame()
+
+aves_elements_file_path <- file.path(data_base_path, 
+                        "6. aves accelerated candidate functional regions",
+                        "aves_acc_candidate_func_elements_all.txt")
+
+aves_elements <- read.delim(aves_elements_file_path) %>%
+  dplyr::select(phastCons_seqnames, phastCons_start, phastCons_end, phastCons_id) %>%
+  unique.data.frame()
+
+# Transform dataframe to Granges to find overlaps with other databases
+# All mammal accelerated elements (cod & non-cod)
+mammals_acc_ranges <- makeGRangesFromDataFrame(mammals_elements) 
+genome(mammals_acc_ranges) <- "hg38"
+
+# All aves accelerated elements (cod & non-cod)
+aves_acc_ranges <- makeGRangesFromDataFrame(aves_elements)
+genome(aves_acc_ranges) <- "galGal6"
+
+# Write to outputs
+mammals_acc_out_path <- file.path(out_base_path, 
+                                  '3_mammals_candidate_func_elements.bed')
+aves_acc_out_path <- file.path(out_base_path, 
+                               "4_aves_candidate_func_elements.bed")     
+write.table(mammals_acc_ranges, file = mammals_acc_out_path)
+write.table(aves_acc_ranges, file = aves_acc_out_path)
+
+```
+
+The total number of accelerated functional elements for mammals was `r nrow(mammals_elements)` and  for birds was `r nrow(aves_elements)`.
+
+## Proportion of coding and non-coding elements
+
+I will first focus on an exploratory data analysis of these elements. My aim is to quantify how many of these candidate functional elements are coding and how many are non-coding. To do this, we need to know which portions of the genome are coding and which are non-coding. I use .bed files from RefSeqs in UCSC, filtered for those belonging to coding exons. 
+
+
+
+```{r load refseq info}
+# Downloaded from hg38 UCSC Table Browser: 
+# ncbiRefSeq as one BED record per Coding Exon  (20-10-20)
+
+
+annotations_base_path <- file.path(data_base_path, 
+                        "5. mammals accelerated candidate functional regions")
+annotations_file_path <- file.path(annotations_base_path, 
+                                   "CodingExonsRefSeqAll.hg38.bed")
+
+if(! file.exists(annotations_file_path)) {
+    annotations_file_path_zip <- file.path(annotations_base_path, 
+                        "CodingExonsRefSeqAll.hg38.zip")
+    unzip(zipfile = annotations_file_path_zip, 
+          exdir = annotations_base_path)
+}
+
+refseq.exons.mammals <- read.delim(annotations_file_path, header = FALSE) %>% 
+    dplyr::select(V1,V2,V3)
+
+if(file.exists(annotations_file_path)) {
+    file.remove(annotations_file_path)    
+}
+
+# Downloaded from galGa6 UCSC Table Browser: 
+# ncbiRefSeq as one BED record per Coding Exon  (20-10-20)
+
+annotations_base_path <- file.path(data_base_path, 
+                        "6. aves accelerated candidate functional regions")
+annotations_file_path <- file.path(annotations_base_path, 
+                                   "CodingExonsRefSeqAll.galGal6.bed")
+
+if(! file.exists(annotations_file_path)) {
+    annotations_file_path_zip <- file.path(annotations_base_path, 
+                        "CodingExonsRefSeqAll.galGal6.zip")
+    unzip(zipfile = annotations_file_path_zip, 
+          exdir = annotations_base_path)
+}
+
+refseq.exons.chicken <- read.delim(annotations_file_path, header = FALSE)  %>% 
+    dplyr::select(V1,V2,V3) 
+
+if(file.exists(annotations_file_path)) {
+    file.remove(annotations_file_path)    
+}
+
+
+# Transform dataframes to Granges to find overlaps with other databases
+# Mammal exons
+refseq_exons_mammals_granges <- makeGRangesFromDataFrame(refseq.exons.mammals,
+                                                         seqnames.field = "V1",
+                                                         start.field = "V2",
+                                                         end.field = "V3")
+genome(refseq_exons_mammals_granges) <- "hg38"
+
+# Aves exons
+refseq_exons_aves_granges <- makeGRangesFromDataFrame(refseq.exons.chicken,
+                                                      seqnames.field = "V1",
+                                                      start.field = "V2",
+                                                      end.field = "V3")
+genome(refseq_exons_aves_granges) <- "galGal6"
+
+```
+
+After loading the exonic regions from each of the reference genomes, we find how accelerated elements overlap these genomic coordinates. This allows us to find two different subsets: coding accelerated regions and non-coding accelerated regions.
+
+```{r find accelerated overlaps with coding/noncoding}
+
+## Mammals
+# Intersect mammals coding exons with accelerated elements:
+# Coding Mmmmals accelerated functional elements
+mammals_acc_coding <- subsetByOverlaps(mammals_acc_ranges,
+                                       refseq_exons_mammals_granges) 
+
+# Non-coding mammals accelerated elements 
+mammals_acc_non_coding <- subsetByOverlaps(mammals_acc_ranges,
+                                           refseq_exons_mammals_granges,
+                                           invert=TRUE) 
+
+# The sum of coding + non_coding should be equal to the total number of accelerated elements
+#length(mammals_acc_coding) + length(mammals_acc_non_coding) == length(mammals_acc_ranges) 
+
+## Aves
+# Intersect aves coding exons with accelerated elements:
+# Coding aves accelerated functional elements
+aves_acc_coding <- subsetByOverlaps(aves_acc_ranges,
+                                    refseq_exons_aves_granges) 
+# Non-coding aves accelerated elements 
+aves_acc_non_coding <- subsetByOverlaps(aves_acc_ranges,
+                                        refseq_exons_aves_granges,
+                                        invert=TRUE) 
+# The sum of coding + non_coding should be equal to the total number of accelerated elements
+#length(aves_acc_coding) + length(aves_acc_non_coding) == length(aves_acc_ranges)
+
+# Write to outputs
+
+mammals_acc_out_path <- file.path(out_base_path, 
+                                  '5_mammals_accelerated_coding_elements.bed')
+write.table(mammals_acc_coding, file = mammals_acc_out_path)
+mammals_acc_non_coding_out_path <- file.path(out_base_path,
+                                '6_mammals_accelerated_noncoding_elements.bed')
+write.table(mammals_acc_non_coding, file = mammals_acc_non_coding_out_path)
+aves_acc_coding_out_path <- file.path(out_base_path, 
+                                      '7_aves_accelerated_coding_elements.bed')
+write.table(aves_acc_coding, file = aves_acc_coding_out_path)
+aves_acc_non_coding_out_path <- file.path(out_base_path,
+                                    '8_aves_accelerated_noncoding_elements.bed')
+write.table(aves_acc_non_coding, file = aves_acc_non_coding_out_path)
+
+```
+
+The total number of coding accelerated functional elements for mammals was `r length(mammals_acc_coding)` and  for birds was `r length(aves_acc_coding)`. For non-coding elements, the numbers were `r length(mammals_acc_non_coding)` for mammals, which represents a fraction of the  `r (length(mammals_acc_non_coding)/length(mammals_acc_ranges))*100`% total accelerated elements found. For the aves internal lineage,  the `r length(aves_acc_non_coding)` non-coding accelerated elements represent `r (length(aves_acc_non_coding)/length(aves_acc_ranges))*100`% of the total accelerated elements found.
+
+```{r find conserved elements overlaps}
+# Aves
+
+#conserved_aves_granges <- makeGRangesFromDataFrame(conserved_aves, seqnames.field = "V1", start.field = "V2", end.field = "V3")
+#genome(conserved_aves_granges) <- "galGal6"
+# Coding aves conserved elements
+conserved_aves_granges <- conserved_aves
+conserved_aves_coding <- subsetByOverlaps(conserved_aves_granges,
+                                          refseq_exons_aves_granges) 
+ # Non-coding aves conserved elements
+conserved_aves_non_coding <- subsetByOverlaps(conserved_aves_granges,
+                                              refseq_exons_aves_granges,
+                                              invert=TRUE) 
+
+#Mammals 
+
+#conserved.mammals_granges <- makeGRangesFromDataFrame(conserved_mammals, seqnames.field = "V1", start.field = "V2", end.field = "V3")
+genome(conserved_mammals) <- "hg38"
+
+# Coding Mammmals conserved functional elements
+conserved.mammals_coding <- subsetByOverlaps(conserved_mammals,
+                                             refseq_exons_mammals_granges) 
+# Non-coding mammals conserved elements 
+conserved.mammals_non_coding <- subsetByOverlaps(conserved_mammals,
+                                                 refseq_exons_mammals_granges,
+                                                 invert=TRUE) 
+
+# Write to outputs
+mammals_conserved_coding_elements_out_path <- file.path(out_base_path,
+                                    "9_mammals_conserved_coding_elements.bed")
+write.table(conserved.mammals_coding, 
+            file = mammals_conserved_coding_elements_out_path)
+mammals_conserved_noncoding_elements_out_path <- file.path(out_base_path,
+                                "10_mammals_conserved_noncoding_elements.bed")
+write.table(conserved.mammals_non_coding, 
+            file = mammals_conserved_noncoding_elements_out_path)
+aves_conserved_coding_elements_out_path <- file.path(out_base_path, 
+                                        "11_aves_conserved_coding_elements.bed")
+write.table(conserved_aves_coding, 
+            file = aves_conserved_coding_elements_out_path)
+aves_conserved_noncoding_elements_out_path <- file.path(out_base_path,
+                                    "12_aves_conserved_noncoding_elements.bed")
+write.table(conserved_aves_non_coding, 
+            file = aves_conserved_noncoding_elements_out_path)
+
+```
+
+
+As a comparison, the proportion of conserved elements that overlap non-coding regions in mammals is `r (length(conserved.mammals_non_coding)/length(conserved_mammals))*100`% and non-coding regions in aves is `r (length(conserved_aves_non_coding)/length(conserved_aves_granges))*100`%. 
+
+# Distribution in the genome: coding and non-coding
+
+## The most accelerated non-coding regions in mammals and birds
+
+ I first explore the most accelerated candidate functional elements in each set, defined as the elements with the highest number of shifts (base changes) from the reptile ancestor to the lineage under study, excluding gap sequences.
+
+I will do functional experiments in zebrafish using a few of these elements, where I will first evaluate whether these regions behave as transcriptional enhancers in vivo. 
+```{r most accelerated regions in mammals}
+# Obtain only non-coding elements in mammals 
+# Rank from most accelerated to least accelerated
+
+non_coding_acc_regions_mammals_ranked <- read.delim(mammals_elements_file_path) %>%
+  dplyr::select(phastCons_seqnames, phastCons_start, phastCons_end, phastCons_id, functional_element_shift_count_exclgt0gap) %>%
+  unique.data.frame() %>%
+  inner_join(as.data.frame(mammals_acc_non_coding), 
+             by = c("phastCons_seqnames"="seqnames", 
+                    "phastCons_start" = "start", 
+                    "phastCons_end" = "end")) %>%
+  arrange(desc(functional_element_shift_count_exclgt0gap)) %>%
+  mutate(element_accelerated_ranking = row_number(), 
+         element_accelerated_ranking_name = paste0("ncMAR-", row_number())) %>%
+  dplyr::select(phastCons_seqnames, phastCons_start, 
+                phastCons_end, 
+                element_accelerated_ranking_name) %>%
+  makeGRangesFromDataFrame(keep.extra.columns=TRUE)
+
+# Write to outputs
+non_coding_acc_regions_mammals_ranked_out_path <- file.path(out_base_path,
+                        "13_non_coding_acc_regions_mammals_ranked.bed")
+write.table(non_coding_acc_regions_mammals_ranked, 
+            file = non_coding_acc_regions_mammals_ranked_out_path)
+
+```
+
+```{r most accelerated regions in aves}
+
+# Obtain only non-coding elements in aves
+# Rank from most accelerated to least accelerated
+
+non_coding_acc_regions_aves_ranked <- read.delim(aves_elements_file_path) %>%
+  dplyr::select(phastCons_seqnames, 
+                phastCons_start, 
+                phastCons_end, 
+                phastCons_id, 
+                functional_element_shift_count_exclgt0gap) %>%
+  unique.data.frame() %>%
+  inner_join(as.data.frame(aves_acc_non_coding), 
+             by = c("phastCons_seqnames"="seqnames", 
+                    "phastCons_start" = "start", 
+                    "phastCons_end" = "end")) %>%
+  arrange(desc(functional_element_shift_count_exclgt0gap)) %>%
+  mutate(element_accelerated_ranking = row_number(), 
+         element_accelerated_ranking_name = paste0("ncAvAR-", row_number())) %>%
+  dplyr::select(phastCons_seqnames, 
+                phastCons_start, 
+                phastCons_end, 
+                element_accelerated_ranking_name) %>%
+  makeGRangesFromDataFrame(keep.extra.columns=TRUE)
+
+
+# Write to outputs
+non_coding_acc_regions_aves_ranked_out_path <- file.path(out_base_path,
+                                    "14_non_coding_acc_regions_aves_ranked.bed")
+write.table(non_coding_acc_regions_aves_ranked, 
+            file = non_coding_acc_regions_aves_ranked_out_path)
+
+```
+
+The output from these most accelerated regions will be used for intersections. 
+
+
+### Gene with the highest number of non-coding accelerated elements.
+
+
+Data from human genes was obtained from: UCSC Main on Human (hg38) > Genes & Gene Predictions > knownCanonical (genome) > selectedFields	> chr, start, end, GeneSymbol (20-06-20)
+
+knownCanonical identifies the canonical isoform of each cluster ID or gene using the ENSEMBL gene IDs to define each cluster. The canonical transcript is chosen using the APPRIS principal transcript when available. If no APPRIS tag exists for any transcript associated with the cluster, then a transcript in the BASIC set is chosen. If no BASIC transcript exists, then the longest isoform is used.
+
+```{r mammal genes with non-coding accelerated elements}
+
+annotations_base_path <- file.path(data_base_path, 
+                                   "7. human chicken transcripts")
+# Load human gene regions
+
+human_genes_file_path <- file.path(annotations_base_path, 
+                                   "knownCanonical(hg38).bed")
+if(!file.exists(human_genes_file_path)) {
+    annotations_file_path_zip <- file.path(annotations_base_path, 
+                                   "knownCanonical(hg38).zip")
+    unzip(zipfile = annotations_file_path_zip, 
+          exdir = annotations_base_path)
+}
+
+human_genes <- read.table(human_genes_file_path) %>%
+  dplyr::rename("chr" = "V1", "start" = "V2", "end" = "V3", "name" = "V4") %>%
+  mutate(length = end-start)
+
+#clean unzipped file
+if(file.exists(human_genes_file_path)) {
+    file.remove(human_genes_file_path)
+}
+
+# Transform to GRanges
+human_genes_granges <- human_genes %>%
+  makeGRangesFromDataFrame(keep.extra.columns=TRUE)
+
+# Intersection of Non-Coding Mammal accelerated functional elements with Human Genes
+mammal_genes_with_ncMARs_overlaps <- findOverlaps(human_genes_granges,
+                                                   non_coding_acc_regions_mammals_ranked)
+
+# Table with genes and highest number of ncMARs
+mammal_genes_ranked <- as.data.frame(human_genes_granges[queryHits(mammal_genes_with_ncMARs_overlaps),]) %>%
+  group_by(name) %>% summarize(number_of_ncMARs =  n()) %>%
+  arrange(desc(number_of_ncMARs))
+
+# Write to outputs
+mammal_genes_ranked_out_path <- file.path(out_base_path, 
+                                "15_table_mammal_genes_ranked_by_ncMARs.txt")
+write.table(mammal_genes_ranked, file = mammal_genes_ranked_out_path)
+
+```
+
+Data from chicken was obtained from: UCSC Main on Chicken (galGal6) > Genes & Gene Predictions > ncbiRefSeq All (genome) > selectedFields	> chr, txStart, txEnd, name2. (19-11-20)
+
+The chicken genome does not have knownCanonical isoform, therefore, I calculated the longest isoform for each ncbiRefSeq All
+
+```{r avian genes ranked by non-coding accelerated elements}
+
+avian_genes_file_path <- file.path(annotations_base_path, 
+                                   "galGal6_transcripts.bed")
+if(!file.exists(avian_genes_file_path)) {
+    annotations_file_path_zip <- file.path(annotations_base_path, 
+                                   "galGal6_transcripts.zip")
+    unzip(zipfile = annotations_file_path_zip, 
+          exdir = annotations_base_path)
+
+}
+
+# Load chicken gene regions
+avian_genes <- read.table(avian_genes_file_path) 
+#clean unzipped file
+if(file.exists(avian_genes_file_path)) {
+    file.remove(avian_genes_file_path)
+}
+
+avian_genes  <- avian_genes %>%
+  dplyr::rename("chr" = "V1", "start" = "V2", "end" = "V3", "name" = "V4") %>%
+  dplyr::mutate(length = end-start) %>%
+  group_by(name) %>% filter(length == max(length)) %>%
+  unique.data.frame() 
+
+# Transform to GRanges
+avian_genes_granges <- avian_genes %>%
+  makeGRangesFromDataFrame(keep.extra.columns=TRUE)
+# Intersection of Non-Coding Avian accelerated functional elements with Chicken Genes
+aves_genes_with_ncAvARs_overlaps <- findOverlaps(avian_genes_granges,
+                                                 non_coding_acc_regions_aves_ranked) 
+
+# Table with genes and highest number of ncAvARs
+avian_genes_ranked <- as.data.frame(avian_genes_granges[queryHits(aves_genes_with_ncAvARs_overlaps),]) %>%
+  group_by(name) %>% summarize(number_of_ncAvARs =  n()) %>%
+  arrange(desc(number_of_ncAvARs))
+
+# Write to outputs
+avian_genes_ranked_out_path <- file.path(out_base_path, 
+                                "15_table_avian_genes_ranked_by_ncAvARs.txt")
+write.table(avian_genes_ranked, file = avian_genes_ranked_out_path)
+
+```
+
+
