@@ -1,0 +1,2 @@
+collector	date	source	description
+Anabella	2024-12-15	https://farm.cse.ucdavis.edu/~zhypan/Chicken_FAANG/Tissue_specific_regulator/	Data from the paper 'An atlas of regulatory elements in chicken: A resource for chicken genetics and genomics' by Zhangyuan Pan et al.

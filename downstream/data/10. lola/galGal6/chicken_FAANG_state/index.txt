@@ -1,0 +1,24 @@
+filename	tissue
+Adipose_16_segments.bed	Adipose
+BMarrow_16_segments.bed	Bone Marrow
+Bursa_16_segments.bed	Bursa
+Cecum_16_segments.bed	Cecum
+Cerebellum_16_segments.bed	Cerebellum
+Colon_16_segments.bed	Colon
+Cortex_16_segments.bed	Cortex
+Duodenum_16_segments.bed	Duodenum
+Gizzard_16_segments.bed	Gizzard
+Heart_16_segments.bed	Heart
+Hypothalamus_16_segments.bed	Hypothalamus
+Ileum_16_segments.bed	Ileum
+Jejunum_16_segments.bed	Jejunum
+Kidney_16_segments.bed	Kidney
+Liver_16_segments.bed	Liver
+Lung_16_segments.bed	Lung
+Muscle_16_segments.bed	Muscle
+Provent_16_segments.bed	Proventriculus
+ShellGland_16_segments.bed	Shell Gland
+Spleen_16_segments.bed	Spleen
+Testis_16_segments.bed	Testis
+Thymus_16_segments.bed	Thymus
+Trachea_16_segments.bed	Trachea
