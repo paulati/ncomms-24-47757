@@ -1,0 +1,675 @@
+---
+title: "AnalysisElements"
+author: "Anabella Trigila"
+date: "7/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(IRanges)
+library(GenomicRanges)
+library(ggplot2)
+library("simpleCache")
+library("LOLA")
+
+base_path <- '/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/downstream'
+data_base_path <- file.path(base_path, 'data')
+out_base_path <- file.path(base_path, 'outputs')
+scripts_base_path <- file.path(base_path, 'code')
+source(file.path(scripts_base_path, "plot_bargraph.R"))
+source(file.path(scripts_base_path, "plot_scatter.R"))
+source(file.path(scripts_base_path, "plot_lola.R"))
+
+
+
+```
+
+# Load objects
+
+```{r load objects}
+
+mammal_genes_ranked_path <- file.path(out_base_path, 
+                                "15_table_mammal_genes_ranked_by_ncMARs.txt")
+mammal_genes_ranked <- read.table(mammal_genes_ranked_path)
+#------
+annotations_base_path <- file.path(data_base_path, 
+                                   "7. human chicken transcripts")
+human_genes_file_path <- file.path(annotations_base_path, 
+                                   "knownCanonical(hg38).bed")
+if(!file.exists(human_genes_file_path)) {
+    annotations_file_path_zip <- file.path(annotations_base_path, 
+                                   "knownCanonical(hg38).zip")
+    unzip(zipfile = annotations_file_path_zip, 
+          exdir = annotations_base_path)
+}
+
+human_genes <- read.table(human_genes_file_path)
+human_genes <-human_genes  %>%
+  dplyr::rename("chr" = "V1", "start" = "V2", "end" = "V3", "name" = "V4") %>%
+  mutate(length = end-start)
+
+#clean unzipped file
+if(file.exists(human_genes_file_path)) {
+    file.remove(human_genes_file_path)
+}
+#------
+
+avian_genes_ranked_path <- file.path(out_base_path, 
+                                "15_table_avian_genes_ranked_by_ncAvARs.txt")
+avian_genes_ranked <- read.table(avian_genes_ranked_path)
+
+#------
+
+annotations_base_path <- file.path(data_base_path, 
+                                   "7. human chicken transcripts")
+avian_genes_file_path <- file.path(annotations_base_path, 
+                                   "galGal6_transcripts.bed")
+if(!file.exists(avian_genes_file_path)) {
+    annotations_file_path_zip <- file.path(annotations_base_path, 
+                                   "galGal6_transcripts.zip")
+    unzip(zipfile = annotations_file_path_zip, 
+          exdir = annotations_base_path)
+
+}
+
+# Load chicken gene regions
+avian_genes_df <- read.table(avian_genes_file_path) 
+#clean unzipped file
+if(file.exists(avian_genes_file_path)) {
+    file.remove(avian_genes_file_path)
+}
+
+avian_genes  <- avian_genes_df %>%
+  dplyr::rename("chr" = "V1", "start" = "V2", "end" = "V3", "name" = "V4") %>%
+  dplyr::mutate(length = end-start) %>%
+  group_by(name) %>% filter(length == max(length)) %>%
+  unique.data.frame() 
+
+avian_genes_granges <- makeGRangesFromDataFrame(avian_genes, 
+                                                keep.extra.columns=TRUE)
+genome(avian_genes_granges) <- "galGal6"
+
+#------
+non_coding_acc_regions_mammals_ranked_path <- file.path(out_base_path,
+                        "13_non_coding_acc_regions_mammals_ranked.bed")
+non_coding_acc_regions_mammals_ranked_df <- read.table(
+    non_coding_acc_regions_mammals_ranked_path)
+non_coding_acc_regions_mammals_ranked <- makeGRangesFromDataFrame(
+    non_coding_acc_regions_mammals_ranked_df, keep.extra.columns = TRUE)
+#------
+annotations_base_path <- file.path(data_base_path, 
+                                   "7. human chicken transcripts")
+
+human_genes_file_path <- file.path(annotations_base_path, 
+                                   "knownCanonical(hg38).bed")
+if(!file.exists(human_genes_file_path)) {
+    annotations_file_path_zip <- file.path(annotations_base_path, 
+                                   "knownCanonical(hg38).zip")
+    unzip(zipfile = annotations_file_path_zip, 
+          exdir = annotations_base_path)
+}
+
+human_genes <- read.table(human_genes_file_path) %>%
+  dplyr::rename("chr" = "V1", "start" = "V2", "end" = "V3", "name" = "V4") %>%
+  mutate(length = end-start)
+
+#clean unzipped file
+if(file.exists(human_genes_file_path)) {
+    file.remove(human_genes_file_path)
+}
+
+human_genes_granges <- human_genes %>%
+  makeGRangesFromDataFrame(keep.extra.columns=TRUE)
+#------
+non_coding_acc_regions_aves_ranked_path <-  file.path(out_base_path,
+                                "14_non_coding_acc_regions_aves_ranked.bed")
+                       
+non_coding_acc_regions_aves_ranked_df <- read.table(
+    non_coding_acc_regions_aves_ranked_path)
+non_coding_acc_regions_aves_ranked <- makeGRangesFromDataFrame(
+    non_coding_acc_regions_aves_ranked_df, keep.extra.columns = TRUE)
+#------
+
+mammals_acc_non_coding_path <- file.path(out_base_path,
+                                '6_mammals_accelerated_noncoding_elements.bed')
+mammals_acc_non_coding_df <- read.table(mammals_acc_non_coding_path)
+
+mammals_acc_non_coding <- makeGRangesFromDataFrame(mammals_acc_non_coding_df, 
+                                                   keep.extra.columns = TRUE)
+genome(mammals_acc_non_coding) <- 'hg38'
+
+#------
+
+conserved_mammals_path <- file.path(out_base_path, 
+                                        "1_conserved_mammals_phastcons.bed")
+conserved_mammals_df <- read.table(conserved_mammals_path)
+
+conserved_mammals <- makeGRangesFromDataFrame(conserved_mammals_df, 
+                                              keep.extra.columns = TRUE)
+genome(conserved_mammals) <- 'hg38'
+
+#------
+
+conserved_aves_path <- file.path(out_base_path, 
+                                 "2_conserved_aves_phastcons.bed")
+conserved_aves_df <- read.table(conserved_aves_path)
+
+conserved_aves <- makeGRangesFromDataFrame(conserved_aves_df, 
+                                              keep.extra.columns = TRUE)
+genome(conserved_aves) <- 'galGal6'
+
+#------
+
+aves_acc_non_coding_path <- file.path(out_base_path,
+                                    '8_aves_accelerated_noncoding_elements.bed')
+aves_acc_non_coding_df <- read.table(aves_acc_non_coding_path)
+
+aves_acc_non_coding <- makeGRangesFromDataFrame(aves_acc_non_coding_df, 
+                                                keep.extra.columns = TRUE)
+genome(aves_acc_non_coding) <- "galGal6"
+
+
+```
+
+### Frequency of non-coding accelerated elements in intronic regions per transcriptional unit
+
+Ranking the genes with the highest number of accelerated elements could be influencing the gene length. For this reason, we decided to plot the number of accelerated elements according to their gene size.
+
+```{r accelerated elements per transcriptional unit}
+
+# Table with number of ncMARs per human gene
+table_mammals_perTU <- inner_join(mammal_genes_ranked, human_genes, by = 'name') %>%
+  dplyr::select(name, number_of_ncMARs,length)
+
+# Plot mammals results
+plot_mammals_perTU <- plot_scatter(
+  data = table_mammals_perTU,
+  x_var = "length",
+  y_var = "number_of_ncMARs",
+  name_var = "name",
+  x_label = "Gene length",
+  y_label = "No. ncMARs",
+  png_image =  NULL,
+  number_to_show = 12
+) 
+
+# Table with number of ncAvARs per chicken gene
+table_aves_perTU <- inner_join(avian_genes_ranked, avian_genes, by = 'name') %>%
+  dplyr::select(name, number_of_ncAvARs,length) 
+
+
+# Plot aves results
+plot_aves_perTU <- plot_scatter(
+  data = table_aves_perTU,
+  x_var = "length",
+  y_var = "number_of_ncAvARs",
+  name_var = "name",
+  x_label = "Gene length",
+  y_label = "No. ncAvARs",
+  png_image =  NULL,
+  number_to_show = 10
+) 
+
+
+```
+
+Could this be a result of a high proportion of CNEs in each gene? Meaning: Genes with a higher proportion of phastCons have a higher proportion of accelerated elements?
+
+```{r Plot non-coding genes, fig.height=7, fig.width=7}
+# Plot bargraphs
+mammals_1 <- plot_horizontal_bar(head(mammal_genes_ranked, n = 20),
+                    x_var = number_of_ncMARs,
+                    y_var = name,
+                    x_label = "ncMARs",
+                    png_image = file.path(scripts_base_path, "mammal.png"))
+
+aves_1 <- plot_horizontal_bar(head(avian_genes_ranked, n = 20),
+                    x_var = number_of_ncAvARs,
+                    y_var = name,
+                    x_label = "ncAvARs",
+                    png_image = file.path(scripts_base_path, "bird.png"))
+# Plot scatters
+
+cow_1 <- cowplot::plot_grid(mammals_1, aves_1, 
+                            labels = c('A', 'B'), label_size = 12, 
+                            align = "h", axis = "b")
+cow_2 <- cowplot::plot_grid(plot_mammals_perTU, 
+                            plot_aves_perTU, labels = c('C', 'D'), 
+                            label_size = 12, align = "v", 
+                            axis = "l",  scale = 1)
+
+
+# Write to outputs
+cow_3 <- cowplot::plot_grid(cow_1, cow_2, ncol = 1, rel_heights = c(2, 1), align = "v")
+
+plot_out_path <- file.path(out_base_path, "16_plot_genes_ranked_by_acc_elements.pdf")
+ggplot2::ggsave(cow_3, filename = plot_out_path, 
+                width = 8, height = 11, units = "in")
+
+```
+
+### Distribution of accelerated sequences in topologically associated domains (TADs)
+
+```{r TADs and mammals MARs}
+
+# Load list of TADs
+mammal_TADs_file_path <- file.path(data_base_path ,"8. TADs", 
+                                   "CP_TADs_hg38.bed")
+mammal_TADs <- read.table(mammal_TADs_file_path) %>%
+  dplyr::rename(chr = "V1" , start = "V2", end =  "V3") %>%
+  mutate(name = paste0(chr,":",start,"-",end)) %>%
+  makeGRangesFromDataFrame(keep.extra.columns=TRUE)
+
+# Intersection of Non-Coding MAMMAL accelerated functional elements with MAMMAL TADs
+TADs_with_ncMARs <- findOverlaps(mammal_TADs,
+                                non_coding_acc_regions_mammals_ranked)
+
+# Ranking of TADs with highest ncMARs
+mammal_TADs_ranked <- as.data.frame(mammal_TADs[queryHits(TADs_with_ncMARs),]) %>%
+    group_by(name) %>% 
+    summarize(number_of_ncMARs =  n()) %>% 
+    arrange(desc(number_of_ncMARs)) 
+
+# Rename Table  
+mammal_TADs_ranked <-  mammal_TADs_ranked %>%
+  dplyr::rename("Number of ncMARs" = "number_of_ncMARs") %>%
+  dplyr::rename("TAD Region coordinates" = "name")
+
+# Create table to display
+
+main.title <- "Table 2"
+
+table_tads_ranked_mammals <- ggpubr::ggtexttable(head(mammal_TADs_ranked, n = 5), 
+    rows = NULL, theme = ggpubr::ttheme("blank")) %>%
+    ggpubr::tab_add_hline(at.row = 1:2, row.side = "top", linewidth = 2) %>%
+    ggpubr::tab_add_title(text = main.title, face = "bold")
+
+# Write to outputs
+table_tads_ranked_mammals_out_path <- file.path(out_base_path, 
+                            "17_table_TADs_ranked_by_acc_elements_mammals.pdf")
+ggplot2::ggsave(table_tads_ranked_mammals, 
+                filename = table_tads_ranked_mammals_out_path)
+
+# Which genes are there inside and closest to the top TADs?
+
+top_TADs_mammals <- mammal_TADs[mcols(mammal_TADs)$name %in% 
+                    head(mammal_TADs_ranked$`TAD Region coordinates`, n = 5)]
+
+find_genes_in_TADs <- function(tads, genes) {
+  
+    result <- data.frame(TAD_Coordinates = character(), 
+                       Inside_Genes = character(), 
+                       Closest_Genes = character(), 
+                       stringsAsFactors = FALSE)
+
+  for (i in seq_along(tads)) {
+      
+    tad <- tads[i]
+    inside_genes <- genes[overlapsAny(genes, tad)]
+    
+    left_gene <- genes[precede(tad, genes)]
+    right_gene <- genes[follow(tad, genes)]
+    
+    inside_names <- ifelse(length(inside_genes) > 0,
+                           paste(mcols(inside_genes)$name,
+                                 collapse = ", "), "None")
+    left_name <- ifelse(length(left_gene) > 0, mcols(left_gene)$name, "None")
+    right_name <- ifelse(length(right_gene) > 0, mcols(right_gene)$name, "None")
+    
+    closest_names <- paste(left_name, right_name, sep = ", ")
+    
+    result <- rbind(result, data.frame(TAD_Coordinates = tad$name, 
+                                       Inside_Genes = inside_names, 
+                                       Closest_Genes = closest_names, 
+                                       stringsAsFactors = FALSE))
+  }
+  
+  return(result)
+}
+
+# Find genes for the TADs
+top_TADs_mammals_and_genes <- find_genes_in_TADs(top_TADs_mammals, 
+                                                 human_genes_granges)
+
+# Write table to outputs
+top_TADs_mammals_and_genes_out_path <- file.path(out_base_path, 
+                                "17_table_hg38_genes_in_ncMARs_TADs.txt")
+write.table(top_TADs_mammals_and_genes, 
+            file = top_TADs_mammals_and_genes_out_path)
+
+```
+
+```{r TADs and avian ncAVARs}
+# Load list of TADs
+
+chicken_TADs_file_path <- file.path(data_base_path, "8. TADs",
+                                    "Fibroblast_TADs_galGal6.bed")
+
+chicken_TADs <- read.table(chicken_TADs_file_path) %>%
+  dplyr::rename(chr = "V1" , start = "V2", end =  "V3") %>%
+  mutate(name = paste0(chr,":",start,"-",end)) %>%
+  makeGRangesFromDataFrame(keep.extra.columns=TRUE)
+genome(chicken_TADs) <- "galGal6"
+
+# Intersection of Non-Coding Avian accelerated functional elements with Chicken Genes
+TADs_with_ncAvARs <- findOverlaps(chicken_TADs,
+                                  non_coding_acc_regions_aves_ranked) 
+
+# Ranking of TADs with highest ncAvARs
+avian_TADs_ranked <- as.data.frame(
+    chicken_TADs[queryHits(TADs_with_ncAvARs),]) %>% 
+    group_by(name) %>% 
+    summarize(number_of_ncAvARs =  n()) %>% 
+    arrange(desc(number_of_ncAvARs))
+
+# Rename Table  
+avian_TADs_ranked <-  avian_TADs_ranked %>%
+    dplyr::rename("Number of ncAvARs" = "number_of_ncAvARs") %>%
+    dplyr::rename("TAD Region coordinates" = "name")
+
+# Create table to display
+main.title <- "Table 3"
+
+table_tads_ranked_aves <- ggpubr::ggtexttable(
+    head(avian_TADs_ranked, n = 5), 
+    rows = NULL, 
+    theme = ggpubr::ttheme("blank")) %>%
+ ggpubr::tab_add_hline(at.row = 1:2, row.side = "top", linewidth = 2) %>%
+ ggpubr::tab_add_title(text = main.title, face = "bold")
+
+# Write to outputs
+table_tads_ranked_aves_out_path <- file.path(out_base_path, 
+                            "18_table_TADs_ranked_by_acc_elements_aves.pdf")
+ggplot2::ggsave(table_tads_ranked_aves, 
+                filename = table_tads_ranked_aves_out_path)
+
+# Which genes are there inside and closest to the top TADs? (Reviewer 2, P10)
+top_TADs_chicken <- chicken_TADs[mcols(chicken_TADs)$name %in% 
+                        head(avian_TADs_ranked$`TAD Region coordinates`, n = 5)]
+
+# Find genes for the TADs
+
+top_TADs_avian_and_genes <- find_genes_in_TADs(top_TADs_chicken, 
+                                               avian_genes_granges)
+
+# Write table to outputs
+top_TADs_avian_and_genes_out_path <- file.path(out_base_path, 
+                                "18_table_galGal6_genes_in_ncAvARs_TADs.txt")
+write.table(top_TADs_avian_and_genes, file = top_TADs_avian_and_genes_out_path)
+
+```
+
+# Common non-coding regions
+
+We were interested in exploring whether there was acceleration in orthologous non-coding regions of birds and mammals. This could indicate that certain amniote conserved non-coding elements in the genome had a function that was relevant for both lineages. To do this, we liftedOver the genomic coordinates from the avian accelerated elements into the hg38 genome.
+
+```{r common non coding regions: liftover}
+library(rtracklayer)
+
+annotations_base_path <- file.path(data_base_path, "9. liftover")
+chain_file_path <- file.path(annotations_base_path, "galGal6ToHg38.over.chain")
+if(! file.exists(chain_file_path)) {
+    chain_file_path_zip <- file.path(annotations_base_path, "galGal6ToHg38.over.zip")
+    unzip(chain_file_path_zip, exdir = annotations_base_path)
+}
+
+# liftOver galGal6 coordinates to hg38 coordinates
+# path <- here::here("data", "9. liftover", "galGal6ToHg38.over.chain")
+ch <- import.chain(chain_file_path)
+if(file.exists(chain_file_path)) {
+    file.remove(chain_file_path)
+}
+    
+genome(non_coding_acc_regions_aves_ranked) = "galGal6"
+
+seqlevelsStyle(non_coding_acc_regions_aves_ranked) = "UCSC"  # necessary
+non_coding_acc_regions_aves_ranked_hg38 = liftOver(non_coding_acc_regions_aves_ranked, ch)
+
+non_coding_acc_regions_aves_ranked_hg38_unlist <- non_coding_acc_regions_aves_ranked_hg38 %>%
+  unlist() %>%
+  reduce(min.gapwidth = 10L)
+
+```
+
+We originally have `r length(non_coding_acc_regions_aves_ranked)` non-coding accelerated regions in aves. We lift-over those regions to the hg38 genome in order to make the overlaps with mammals. In the lift-over, we have `r sum(sapply(non_coding_acc_regions_aves_ranked_hg38, length) > 0)` successfully mapped elements regions.
+
+```{r common non coding regions: calculation}
+
+# Find overlapping elements between the two sets of genomic regions
+common_non_coding_regions_overlap <- findOverlaps(non_coding_acc_regions_mammals_ranked,
+                                                  non_coding_acc_regions_aves_ranked_hg38) 
+
+common_non_coding_regions <- non_coding_acc_regions_mammals_ranked[
+  queryHits(common_non_coding_regions_overlap),] %>%
+  unique() 
+
+# Write to outputs (Supp. Table S6)
+common_non_coding_regions_out_path <- file.path(out_base_path, 
+                                "23_common_non_coding_regions_hg38.bed")
+write.table(common_non_coding_regions, 
+            file = common_non_coding_regions_out_path)
+
+```
+
+We intersected the accelerated regions of mammals and birds, which led to `r length(common_non_coding_regions)` non-coding common regions (CommonAcc).
+
+The genes with the highest number of regulatory regions are those in the following table.
+
+```{r common non coding regions: genes with the highest number}
+# Intersection of Non-Coding Mammal accelerated functional elements with Human Genes
+common_non_coding_gene_overlap <- findOverlaps(human_genes_granges,
+                                               common_non_coding_regions) 
+
+common_non_coding_genes_ranked <- as.data.frame(
+    human_genes_granges[queryHits(common_non_coding_gene_overlap),]) %>% 
+    group_by(name) %>% 
+    summarize(`Number of Common` =  n()) %>% 
+    arrange(desc(`Number of Common`)) # %>% 
+    # rename("Gene" = "name")
+
+ggpubr::ggtexttable(head(common_non_coding_genes_ranked, n = 5), 
+                    rows = NULL, 
+                    theme = ggpubr::ttheme("blank")) %>%
+                    ggpubr::tab_add_hline(at.row = 1:2, 
+                                          row.side = "top", 
+                                          linewidth = 2)
+
+```
+
+# Clusters of non-coding modification in the genome
+
+A "cluster" is a set of three or more accelerated elements where the closest neighboring element was at least ≤50 kb apart.
+
+```{r cluster of elements in mammals: calculation}
+
+# Calculate elements in the same fashion as Holloway et al. 2016
+non_coding_acc_regions_mammals_ranked$cluster <- 
+    subjectHits(findOverlaps(non_coding_acc_regions_mammals_ranked, 
+                             reduce(non_coding_acc_regions_mammals_ranked, 
+                                    min.gapwidth = 50000L))) # Adds a new column to all accelerated elements classyfing each of them to a cluster
+
+# Dataframe with ncMARs in clusters
+df_mammal <- data.frame(
+  name = non_coding_acc_regions_mammals_ranked$element_accelerated_ranking_name,
+  cluster = non_coding_acc_regions_mammals_ranked$cluster,
+  chr = as.character(non_coding_acc_regions_mammals_ranked@seqnames),
+  start = as.character(non_coding_acc_regions_mammals_ranked@ranges@start),
+  end = as.character(non_coding_acc_regions_mammals_ranked@ranges@start + non_coding_acc_regions_mammals_ranked@ranges@width)) %>%
+  group_by(cluster) %>%
+  mutate(freq = n()) %>%
+  arrange(desc(freq), cluster) %>%
+  filter(freq > 3)
+
+# Export table to outputs
+df_mammal_out_path <- file.path(out_base_path, "27_non_coding_ncMARs_clusters.txt")
+write.table(df_mammal, file = df_mammal_out_path)
+
+```
+
+There are `r nrow(df_mammal)` ncMARs in `r length(unique(df_mammal$cluster))` clusters.
+
+We also calculate which ncAvARs elements are also distributed in clusters by applying the same methodology as previously.
+
+```{r cluster of elements in aves: calculation}
+
+# Calculate elements in the same fashion as Holloway et al. 2016
+non_coding_acc_regions_aves_ranked$cluster <- subjectHits(findOverlaps(
+  non_coding_acc_regions_aves_ranked,
+  reduce(non_coding_acc_regions_aves_ranked,
+         min.gapwidth = 50000L)))
+
+# Dataframe with ncAvARs in clusters
+df_aves <-  data.frame(name = non_coding_acc_regions_aves_ranked$element_accelerated_ranking_name,
+                       cluster = non_coding_acc_regions_aves_ranked$cluster,
+                       chr = as.character(non_coding_acc_regions_aves_ranked@seqnames),
+                       start = as.character(non_coding_acc_regions_aves_ranked@ranges@start),
+                       end = as.character(non_coding_acc_regions_aves_ranked@ranges@start + non_coding_acc_regions_aves_ranked@ranges@width)) %>%
+  group_by(cluster) %>%
+  mutate(freq = n()) %>%
+  arrange(desc(freq), cluster) %>%
+  filter(freq > 3)
+
+# Export table to outputs
+df_aves_out_path <- file.path(out_base_path, "29_non_coding_ncAvARs_clusters.txt")
+write.table(df_aves, file = df_aves_out_path)
+```
+
+There are `r nrow(df_aves)` ncAvARs in `r length(unique(df_aves$cluster))` clusters.
+
+# Developmental and regulatory features of non-coding accelerated elements
+
+LOLA "provides functions for testing overlap of sets of genomic regions with public and custom region set (genomic ranges) databases. This makes it possible to do automated enrichment analysis for genomic region sets, thus facilitating interpretation of functional genomics and epigenomics data." I use the dataset LOLA core to test for enrichment: <http://big.databio.org/regiondb/LOLACoreCaches_180412.tgz>
+
+```{r regulatory enrichment: mammals, eval=FALSE, include=FALSE}
+# Mammal LOLA 
+
+# Download LOLA database
+prepare_lola_db <- function() {
+    url <- "http://big.databio.org/regiondb/LOLACoreCaches_180412.tgz"
+    file_name <- "LOLACoreCaches_180412.tgz"
+    current_path <- getwd()
+    lola_data_path <- file.path(data_base_path, "10. lola", "default")
+    setwd(lola_data_path)
+    db_file_path <- file.path(lola_data_path, file_name)
+    if(!file.exists(db_file_path)) {
+        download.file(url, file_name)    
+    }
+    setwd(current_path)
+    
+    untar(db_file_path, exdir = lola_data_path)
+}
+
+clean_lola_db <- function() {
+    lola_data_path <- file.path(data_base_path, "10. lola", "default")
+    unlink(lola_data_path, recursive = TRUE)
+    dir.create(lola_data_path, recursive = TRUE, showWarnings = FALSE)
+}
+
+# Load Core regions in LOLA
+prepare_lola_db()
+regionDB <- loadRegionDB(file.path(data_base_path,
+                                    "10. lola", "default",
+                                    "nm", "t1", "resources", "regions",
+                                    "LOLACore", "hg38"))
+
+# Run LOLA (acc elements non_coding vs. conserved mammals elements)
+locResults_mammals <- runLOLA(mammals_acc_non_coding,
+                              conserved_mammals,
+                              regionDB,
+                              cores=3) 
+
+#By default, the results will be ranked by p-value. The meanRnk and maxRnk columns rank the results by a combination of p-value, log odds, and support (overlap), and often yield the most interpretable results. Explore these rankings by simply reordering the data.table. 
+
+# Sort results by maxRank
+lola.output <- locResults_mammals[order(maxRnk, decreasing=FALSE),]
+
+# Sort results by pvalue
+lola.output <- locResults_mammals[order(pValueLog, decreasing=TRUE),]
+
+# Produce a plot with top 10 LOLA results
+
+
+lola_plot_mammals <- plot_lola(lola.output,
+          value_col = "pValueLog",
+          img_path = file.path(scripts_base_path, "mammal.png"))
+
+```
+
+DNAse hypersensitive sites, p300 and VISTA enhancers are statistically over-represented in accelerated elements in comparison with their genome-wide conserved non-coding counterparts. These regulatory modules and their transcription factors are predicted to be involved in the regulation of processes such as bone development (Ewing sarcoma) and Brain.
+
+```{r regulatory enrichment: aves, eval=FALSE, include=FALSE}
+### Aves LOLA analysis ###
+
+# liftOver galGal6 coordinates to hg38 coordinates
+genome(conserved_aves) = "galGal6"
+seqlevelsStyle(conserved_aves) = "UCSC"  # necessary
+conserved_aves_hg38 = liftOver(conserved_aves, ch)
+
+# Run LOLA (acc elements non_coding vs. conserved aves elements)
+locResults_aves <- runLOLA(unlist(non_coding_acc_regions_aves_ranked_hg38),
+                           unlist(conserved_aves_hg38),
+                           regionDB,
+                           cores=4)
+
+
+
+# Sort results by pvalue
+lola.output_aves <- locResults_aves[order(pValueLog, decreasing=TRUE),]
+
+# Sort results by maxRank
+lola.output_aves <- locResults_aves[order(maxRnk, decreasing=FALSE),]
+
+lola_plot_aves <- plot_lola(lola.output_aves,
+          value_col = "pValueLog",
+          img_path = file.path(scripts_base_path, "bird.png"))
+
+clean_lola_db()
+
+```
+
+```{r aves_lola_galgal6}
+### Aves LOLA analysis ###
+
+# Load chicken expression regions in LOLA
+regionDB_galgal6 <- loadRegionDB(file.path(data_base_path, 
+                                           "10. lola", "galGal6"))
+
+# Run LOLA (acc elements non_coding vs. conserved aves elements)
+locResults_aves_galgal6 <- runLOLA(aves_acc_non_coding,
+                           conserved_aves,
+                           regionDB_galgal6,
+                           cores=4)
+
+# Sort results by pvalue
+lola.output_aves_galgal6 <- locResults_aves_galgal6[order(pValueLog, 
+                                                          decreasing=TRUE),]
+
+# Sort results by maxRank
+lola.output_aves_galgal6 <- locResults_aves_galgal6[order(maxRnk, 
+                                                          decreasing=FALSE),]
+
+
+lola_plot_aves <- plot_lola(lola.output_aves_galgal6,
+          value_col = "pValueLog",
+          img_path = file.path(scripts_base_path, "bird.png"))
+```
+
+We then produce a single result with both plots (representing LOLA results of ncMARs and ncAvARs) side by side.
+
+```{r export lola plots, eval=FALSE, include=FALSE}
+
+lola_plot_ncmars_ncavars <- cowplot::plot_grid(lola_plot_mammals, lola_plot_aves,
+                         labels = c('A', 'B'),
+                         label_size = 12,
+                         ncol = 2)
+
+# Export plot to outputs
+ggplot2::ggsave(lola_plot_ncmars_ncavars,
+                filename = file.path(out_base_path, "30_LOLA_results.pdf"),
+                width = 10, height = 5, units = "in")
+```
