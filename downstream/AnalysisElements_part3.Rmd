@@ -1,0 +1,386 @@
+---
+title: "AnalysisElements"
+author: "Anabella Trigila"
+date: "7/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(IRanges)
+library(GenomicRanges)
+library(ggplot2)
+
+base_path <- '/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757/downstream'
+data_base_path <- file.path(base_path, 'data')
+out_base_path <- file.path(base_path, 'outputs')
+scripts_base_path <- file.path(base_path, 'code')
+
+source(file.path(scripts_base_path, "plot_scatter.R"))
+source(file.path(scripts_base_path, "plot_bargraph.R"))
+
+```
+
+# Load objects
+
+```{r load objects}
+
+
+annotations_base_path <- file.path(data_base_path, 
+                        "5. mammals accelerated candidate functional regions")
+annotations_file_path <- file.path(annotations_base_path, 
+                                   "CodingExonsRefSeqAll.hg38.bed")
+
+if(! file.exists(annotations_file_path)) {
+    annotations_file_path_zip <- file.path(annotations_base_path, 
+                        "CodingExonsRefSeqAll.hg38.zip")
+    unzip(zipfile = annotations_file_path_zip, 
+          exdir = annotations_base_path)
+}
+
+refseq.exons.mammals <- read.delim(annotations_file_path, header = FALSE) %>% 
+    dplyr::select(V1,V2,V3)
+
+if(file.exists(annotations_file_path)) {
+    file.remove(annotations_file_path)    
+}
+
+refseq_exons_mammals_granges <- makeGRangesFromDataFrame(refseq.exons.mammals,
+                                                         seqnames.field = "V1",
+                                                         start.field = "V2",
+                                                         end.field = "V3")
+genome(refseq_exons_mammals_granges) <- "hg38"
+
+# -----
+
+annotations_base_path <- file.path(data_base_path, 
+                        "6. aves accelerated candidate functional regions")
+annotations_file_path <- file.path(annotations_base_path, 
+                                   "CodingExonsRefSeqAll.galGal6.bed")
+
+if(! file.exists(annotations_file_path)) {
+    annotations_file_path_zip <- file.path(annotations_base_path, 
+                        "CodingExonsRefSeqAll.galGal6.zip")
+    unzip(zipfile = annotations_file_path_zip, 
+          exdir = annotations_base_path)
+}
+
+refseq.exons.chicken <- read.delim(annotations_file_path, header = FALSE)  %>% 
+    dplyr::select(V1,V2,V3) 
+
+if(file.exists(annotations_file_path)) {
+    file.remove(annotations_file_path)    
+}
+
+# Aves exons
+refseq_exons_aves_granges <- makeGRangesFromDataFrame(refseq.exons.chicken,
+                                                      seqnames.field = "V1",
+                                                      start.field = "V2",
+                                                      end.field = "V3")
+genome(refseq_exons_aves_granges) <- "galGal6"
+
+
+# -----
+
+mammals_acc_path <- file.path(out_base_path, 
+                                  '3_mammals_candidate_func_elements.bed')
+mammals_acc_ranges_df <- read.table(mammals_acc_path)
+mammals_acc_ranges <- makeGRangesFromDataFrame(mammals_acc_ranges_df, 
+                                               keep.extra.columns = TRUE)
+mammals_acc_coding <- subsetByOverlaps(mammals_acc_ranges,
+                                       refseq_exons_mammals_granges) 
+
+#---
+
+aves_acc_path <- file.path(out_base_path, 
+                               "4_aves_candidate_func_elements.bed")     
+
+aves_acc_ranges_df <- read.table(aves_acc_path)
+aves_acc_ranges <- makeGRangesFromDataFrame(aves_acc_ranges_df, 
+                                               keep.extra.columns = TRUE)
+
+aves_acc_coding <- subsetByOverlaps(aves_acc_ranges,
+                                    refseq_exons_aves_granges) 
+
+
+#------
+annotations_base_path <- file.path(data_base_path, 
+                                   "7. human chicken transcripts")
+
+human_genes_file_path <- file.path(annotations_base_path, 
+                                   "knownCanonical(hg38).bed")
+if(!file.exists(human_genes_file_path)) {
+    annotations_file_path_zip <- file.path(annotations_base_path, 
+                                   "knownCanonical(hg38).zip")
+    unzip(zipfile = annotations_file_path_zip, 
+          exdir = annotations_base_path)
+}
+
+human_genes <- read.table(human_genes_file_path) %>%
+  dplyr::rename("chr" = "V1", "start" = "V2", "end" = "V3", "name" = "V4") %>%
+  mutate(length = end-start)
+
+#clean unzipped file
+if(file.exists(human_genes_file_path)) {
+    file.remove(human_genes_file_path)
+}
+
+human_genes_granges <- human_genes %>%
+  makeGRangesFromDataFrame(keep.extra.columns=TRUE)
+
+
+#------
+
+annotations_base_path <- file.path(data_base_path, 
+                                   "7. human chicken transcripts")
+
+avian_genes_file_path <- file.path(annotations_base_path, 
+                                   "galGal6_transcripts.bed")
+if(!file.exists(avian_genes_file_path)) {
+    annotations_file_path_zip <- file.path(annotations_base_path, 
+                                   "galGal6_transcripts.zip")
+    unzip(zipfile = annotations_file_path_zip, 
+          exdir = annotations_base_path)
+
+}
+
+# Load chicken gene regions
+avian_genes <- read.table(avian_genes_file_path) 
+colnames(avian_genes) <- c("seqname", "start", "end", "name")
+#clean unzipped file
+if(file.exists(avian_genes_file_path)) {
+    file.remove(avian_genes_file_path)
+}
+avian_genes_granges <- makeGRangesFromDataFrame(avian_genes, 
+                                                keep.extra.columns=TRUE)
+genome(avian_genes_granges) <- "galGal6"
+
+
+```
+
+
+
+# Coding accelerated elements (cMARs & cAvARs)
+
+We assigned a name to each coding accelerated element based on a descending ranking of the number of changes ('shifts').
+
+```{r raking coding MARs and AvARs}
+
+# Assign names to Mammal coding accelerated elements (cMARs) based on their coding acceleration
+acc_regions_mammals_file_path <- file.path(data_base_path, 
+                                "5. mammals accelerated candidate functional regions", 
+                                "mammals_acc_candidate_func_elements_all.txt")
+acc_regions_mammals <- read.delim(acc_regions_mammals_file_path)
+                                                         
+coding_acc_regions_mammals_ranked <- acc_regions_mammals %>%
+    select(phastCons_seqnames, phastCons_start, 
+         phastCons_end, phastCons_id,
+         functional_element_shift_count_exclgt0gap) %>%
+  unique.data.frame() %>%
+  inner_join(as.data.frame(mammals_acc_coding),
+             by = c("phastCons_seqnames"="seqnames",
+                    "phastCons_start" = "start",
+                    "phastCons_end" = "end")) %>%
+  arrange(desc(functional_element_shift_count_exclgt0gap)) %>%
+  mutate(element_accelerated_ranking = row_number(),
+         element_accelerated_ranking_name = paste0("cMAR-", row_number())) %>%
+  dplyr::select(phastCons_seqnames,
+                phastCons_start,
+                phastCons_end,
+                element_accelerated_ranking_name) %>%
+  makeGRangesFromDataFrame(keep.extra.columns=TRUE)
+
+# Assign names to Avian coding accelerated elements (cAvARs) based on their coding acceleration
+
+acc_regions_aves_file_path <- file.path(data_base_path, 
+                                "6. aves accelerated candidate functional regions", 
+                                "aves_acc_candidate_func_elements_all.txt")
+acc_regions_aves <- read.delim(acc_regions_aves_file_path)
+
+
+coding_acc_regions_aves_ranked <- acc_regions_aves %>%
+  select(phastCons_seqnames, phastCons_start,
+         phastCons_end, phastCons_id,
+         functional_element_shift_count_exclgt0gap) %>%
+  unique.data.frame() %>%
+  inner_join(as.data.frame(aves_acc_coding),
+             by = c("phastCons_seqnames"="seqnames",
+                    "phastCons_start" = "start",
+                    "phastCons_end" = "end")) %>% arrange(desc(functional_element_shift_count_exclgt0gap)) %>%
+  mutate(element_accelerated_ranking = row_number(),
+         element_accelerated_ranking_name = paste0("cAvAR-", row_number())) %>%
+  dplyr::select(phastCons_seqnames,
+                phastCons_start,
+                phastCons_end,
+                element_accelerated_ranking_name) %>%
+  makeGRangesFromDataFrame(keep.extra.columns=TRUE)
+
+# Write to outputs
+
+# Mammal cMARs
+coding_acc_regions_mammals_ranked_out_path <- file.path(out_base_path, 
+                                    "31_coding_acc_regions_mammals_ranked.bed")
+write.table(coding_acc_regions_mammals_ranked, 
+            file = coding_acc_regions_mammals_ranked_out_path)
+# Avian cAvARs
+coding_acc_regions_aves_ranked_out_path <- file.path(out_base_path, 
+                                    "32_coding_acc_regions_aves_ranked.bed")
+write.table(coding_acc_regions_aves_ranked, 
+            file = coding_acc_regions_aves_ranked_out_path)
+
+
+```
+
+## Ranking of genes with the most coding accelerated regions
+
+We ranked genes by their number of coding accelerated regions by intersecting the previously calculated coding accelerated elements and the hg38 and galgal6 coding genes ranges.
+
+```{r genes with coding MARs and AvARs}
+
+# Intersection of Coding Mammal accelerated functional elements with Human Genes
+mammal_genes_with_cMARs_overlaps <- findOverlaps(human_genes_granges,
+                                                 coding_acc_regions_mammals_ranked) 
+
+# Sorting genes by number of cMARs
+mammal_genes_ranked_coding <- as.data.frame(human_genes_granges[queryHits(mammal_genes_with_cMARs_overlaps),]) %>%
+  group_by(name) %>%
+  summarize(number_of_MARs =  n()) %>%
+  arrange(desc(number_of_MARs))
+
+# Intersection of Coding Avian accelerated functional elements with Chicken Genes
+aves_genes_with_cAvARs_overlaps <- findOverlaps(avian_genes_granges,
+                                                coding_acc_regions_aves_ranked) 
+
+# Sorting genes by number of cAvARs
+avian_genes_ranked_coding <- as.data.frame(avian_genes_granges[queryHits(aves_genes_with_cAvARs_overlaps),]) %>%
+  group_by(name) %>%
+  summarize(number_of_cAvARs =  n()) %>%
+  arrange(desc(number_of_cAvARs))
+
+
+# Plot
+
+
+barplot_mammal_coding <- plot_horizontal_bar(
+    head(mammal_genes_ranked_coding, n = 20), 
+    number_of_MARs,
+    name, "cMARs",
+    file.path(scripts_base_path, "mammal.png"))
+
+barplot_aves_coding <- plot_horizontal_bar(
+    head(avian_genes_ranked_coding, n = 20), 
+    number_of_cAvARs,
+    name, "cAvARs",
+    file.path(scripts_base_path, "bird.png"))
+
+
+```
+
+We then produced plots of gene with the highest number of coding accelerated elements and also the distribution based on the number of exons per gene.
+
+```{r exons per gen mammals, fig.height=11.7, fig.width=8.3}
+
+# Find overlaps between human genes and refseq exons -> This shows the number of exons per gene
+exons_per_gene <- findOverlaps(human_genes_granges,
+                               refseq_exons_mammals_granges)
+
+# Count the number of exons per gene
+exons_gene_coding <- as.data.frame(human_genes_granges[queryHits(exons_per_gene),]) %>%
+  group_by(name) %>%
+  summarize(number_of_exons =  n()) %>%
+  arrange(desc(number_of_exons)) # Number of exons includes alternative exons
+
+# Create a table that has the number of exons per gene and the numer of cMARs
+table_mammals_perTU_coding <- inner_join(mammal_genes_ranked_coding,
+                                         exons_gene_coding, by = 'name')
+
+# Plot
+
+scatter_plot <- plot_scatter(
+  data = table_mammals_perTU_coding,
+  x_var = "number_of_exons",
+  y_var = "number_of_MARs",
+  name_var = "name",
+  x_label = "No. Exons",
+  y_label = "No. cMARs",
+  png_image =  file.path(scripts_base_path, "mammal.png")
+) 
+
+
+p1 <- cowplot::plot_grid(barplot_mammal_coding, barplot_aves_coding, 
+                         labels = c('A', 'B'),
+                         label_size = 12, ncol = 2,
+                         align = "h", axis = "b")
+
+
+p2 <- cowplot::plot_grid(p1, scatter_plot,
+                         labels = c('A', ''),
+                         label_size = 12,
+                         ncol = 1)
+
+# Export plot to outputs
+ggplot2::ggsave(p2,
+        filename = file.path(out_base_path, "33_coding_regions_genes.pdf"),
+        width = 5, height = 10, units = "in")
+
+```
+
+Finally, we calculated if these cMARs and cAvARs are clustered and how is their distribution.
+
+```{r coding clusters cMARs and cAvARs}
+
+# Calculate clustered cMARs 
+coding_acc_regions_mammals_ranked$cluster <- subjectHits(
+    findOverlaps(coding_acc_regions_mammals_ranked, 
+                 reduce(coding_acc_regions_mammals_ranked, min.gapwidth = 50000L))) # Adds a new column to all accelerated elements classyfing each of them to a cluster
+
+# Dataframe with cMARs in clusters
+df_mammal_cMARs_clusters <- data.frame(
+  name = coding_acc_regions_mammals_ranked$element_accelerated_ranking_name,
+                        cluster = coding_acc_regions_mammals_ranked$cluster,
+                        chr = as.character(coding_acc_regions_mammals_ranked@seqnames),
+  start = as.character(coding_acc_regions_mammals_ranked@ranges@start),
+  end = as.character(coding_acc_regions_mammals_ranked@ranges@start + coding_acc_regions_mammals_ranked@ranges@width)) %>%
+  group_by(cluster) %>%
+  mutate(freq = n()) %>%
+  arrange(desc(freq), cluster) %>%
+  filter(freq > 3)
+
+# Calculate clustered cAvARs 
+coding_acc_regions_aves_ranked$cluster <- subjectHits(findOverlaps(coding_acc_regions_aves_ranked, reduce(coding_acc_regions_aves_ranked, min.gapwidth = 50000L))) # Adds a new column to all accelerated elements classyfing each of them to a cluster
+
+# Dataframe with cAvARs in clusters
+df_aves_cAvARs_clusters <- data.frame(
+  name = coding_acc_regions_aves_ranked$element_accelerated_ranking_name,
+                        cluster = coding_acc_regions_aves_ranked$cluster,
+                        chr = as.character(coding_acc_regions_aves_ranked@seqnames),
+  start = as.character(coding_acc_regions_aves_ranked@ranges@start),
+  end = as.character(coding_acc_regions_aves_ranked@ranges@start + coding_acc_regions_aves_ranked@ranges@width)) %>%
+  group_by(cluster) %>%
+  mutate(freq = n()) %>%
+  arrange(desc(freq), cluster) %>%
+  filter(freq > 3)
+
+
+# Export table to outputs
+write.table(df_mammal_cMARs_clusters,
+            file = file.path(out_base_path, "34_coding_cMARs_clusters.txt"),
+            row.names = FALSE, quote = FALSE)
+# Avian cAvARs
+write.table(df_aves_cAvARs_clusters,
+            file = file.path(out_base_path, "35_coding_cAvARs_clusters.txt"),
+            row.names = FALSE, quote = FALSE)
+```
+
+# Run phastBias
+
+Detect accelerated regions undergoing GC-biased gene conversion to differentiate from positive selection events.This is run in a cluster because it uses MAF files.
+
+```{r eval=FALSE}
+# Run phastBias (should be done in a cluster/cloud)
+phastbias_file_path <- file.path(scripts_base_path, "run_phastbias.R")
+source(phastbias_file_path)
+```
