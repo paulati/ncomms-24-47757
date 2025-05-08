@@ -1,4 +1,4 @@
-# Project Overview
+# Downstream analysis overview
 
 This repository contains a collection of scripts, datasets, and analysis outputs focused on evolutionary conservation and functional analysis of genomic elements across mammals and birds. The repository is structured to facilitate exploration of conserved coding and noncoding elements, gene enrichment analysis, and the identification of accelerated regions. All the results in this repository can be reproduced by following the workflow outlined in the files `AnalysisElements_part1.Rmd`, `AnalysisElements_part2.Rmd`, `AnalysisElements_part3.Rmd`.
 
