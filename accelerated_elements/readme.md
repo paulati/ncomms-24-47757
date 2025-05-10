@@ -1,15 +1,3 @@
----
-title: "Acceerated Elements"
-author: "Paula Beati"
-date: "2025-05-01"
-output:
-  pdf_document: default
-  html_document: default
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 The strategy is to evaluate acceleration in internal branches (mammals and aves independently) on genomic regions conserved in amniotes and mammals or conserved in amniotes and aves to identify shifts that can be functional region candidates.
 
