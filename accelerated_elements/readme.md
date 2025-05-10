@@ -2,7 +2,9 @@
 title: "Acceerated Elements"
 author: "Paula Beati"
 date: "2025-05-01"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
