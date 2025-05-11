@@ -41,7 +41,7 @@ The neutral model for 77-way alignment was downloaded from <https://hgdownload.s
 
 We added "MAMMALS" label to Newick tree in hg38.phastCons100way.mod and "AVES" label to the tree in galGal6.phastCons77way.mod to be able to specify the internal branch where acceleration would be evaluated.
 
-Labeling is performed by functions in the file <https://github.com/paulati/cladeAcc/blob/master/R/acceleration_neutral_model_delegates.R> The method that calculates acceleration takes the labeling function as a parameter, allowing these methods to be overridden with custom code in analyses involving a different set of species.
+Labeling is performed by functions in the file <https://github.com/paulati/cladeAcc/blob/master/R/acceleration_neutral_model_delegates.R>. The method that calculates acceleration takes the labeling function as a parameter, allowing these methods to be overridden with custom code in analyses involving a different set of species.
 
 # Pipeline
 
@@ -49,13 +49,13 @@ Labeling is performed by functions in the file <https://github.com/paulati/clade
 
 ### a. Amniotes
 
-We used the phastCons function from the RPHAST package (<https://github.com/CshlSiepelLab/RPHAST>) to identify conserved elements in a set of amniotes. The input alignments used for this calculation are the "100 pathways" and "77 pathways", filtered by the species listed in section 2.a.
+We used the phastCons function from the RPHAST package (<https://github.com/CshlSiepelLab/RPHAST>) to identify conserved elements in a set of amniotes. The input alignments used for this calculation are the "100 pathways" and "77 pathways", filtered by the species listed in section [Species 2.a](#a\.-amniotes).
 
-First, we identified conserved regions in amniotes using `phastCons` function with the following parameters: expected.length = 45, target.coverage = 0.3, rho = 0. 3, viterbi=TRUE, for each of the two sub-alignments with the species listed in Data 2.a. `phastCons` function returns a list containing parameter estimates, including an object (most.conserved) of type feat which describes conserved elements detected by the Viterbi algorithm.
+First, we identified conserved regions in amniotes using `phastCons` function with the following parameters: expected.length = 45, target.coverage = 0.3, rho = 0. 3, viterbi=TRUE, for each of the two sub-alignments with the species listed in [Species 2.a](#a\.-amniotes). `phastCons` function returns a list containing parameter estimates, including an object (most.conserved) of type feat which describes conserved elements detected by the Viterbi algorithm.
 
 This computation is performed at line 10 of <https://github.com/paulati/cladeAcc/blob/master/R/conservation.R>
 
-These conserved elements were then filtered according to our criteria for informative regions A region was considered informative when alligator, lizard, and at least a turtle were present in the alignment and had no gaps in these species.
+These conserved elements were then filtered according to our criteria for informative regions. A region was considered informative when alligator, lizard, and at least a turtle were present in the alignment and had no gaps in these species.
 
 This condition is implemented in the functions `required_species_features_sarcopterygii_100way` and `required_species_features_sarcopterygii_77way` in <https://github.com/paulati/cladeAcc/blob/master/R/conservation_delegates.R>
 
@@ -67,7 +67,8 @@ This computation is performed at line 15 of <https://github.com/paulati/cladeAcc
 
 ### b. Mammals
 
-We identified conserved regions in mammals using `phastCons` function with the same parameters values used for amniotes conserved elements computation (expected.length = 45, target.coverage = 0.3, rho = 0. 3, viterbi=TRUE), for a sub-alignment of "100 pathways" containing the species listed in Data 2.b. phastCons `most.conserved` results (conserved elements detected by the Viterbi algorithm) were then filtered according to our criteria for informative regions.
+We identified conserved regions in mammals using `phastCons` function with the same parameters values used for amniotes conserved elements computation (expected.length = 45, target.coverage = 0.3, rho = 0. 3, viterbi=TRUE), for a sub-alignment of "100 pathways" containing the species listed in section [Species 2.b](#b\.-mammals).
+phastCons `most.conserved` results (conserved elements detected by the Viterbi algorithm) were then filtered according to our criteria for informative regions.
 
 A region was considered informative when the associated alignment fulfilled the following three conditions:
 
@@ -87,7 +88,7 @@ This computation is performed at line 15 of <https://github.com/paulati/cladeAcc
 
 ### c. Aves
 
-We identified conserved regions in aves using `phastCons` function with the same parameters values used for amniotes conserved elements computation (expected.length = 45, target.coverage = 0.3, rho = 0. 3, viterbi=TRUE), for a sub-alignment of "77 pathways" containing the species listed in Data 2.c. phastCons `most.conserved` results (conserved elements detected by the Viterbi algorithm) were then filtered according to our criteria for informative regions. 
+We identified conserved regions in aves using `phastCons` function with the same parameters values used for amniotes conserved elements computation (expected.length = 45, target.coverage = 0.3, rho = 0. 3, viterbi=TRUE), for a sub-alignment of "77 pathways" containing the species listed in [Species 2.c](#c\.-aves). phastCons `most.conserved` results (conserved elements detected by the Viterbi algorithm) were then filtered according to our criteria for informative regions. 
 
 A region was considered informative when the associated alignment fulfilled the following four conditions:
 
@@ -104,12 +105,17 @@ The reported aves' conserved elements resulted from the intersection of the cons
 
 This computation is performed at line 15 of <https://github.com/paulati/cladeAcc/blob/master/R/conservation.R>
 
+### d. Candidate Regions
+
+We calculated the intersection between the amniotes conserved regions (output from [Pipeline 1.a](#a\.-amniotes-1)) and the mammals conserved regions (output from [Pipeline 1.b](#b\.-mammals-1).) or aves conserved regions (output from [Pipeline 1.c](#c\.-aves-1).) 
+
+The sets of candidate regions to evaluate acceleration in mammals or aves are the result of these intersections.
+
+This intersection is performed by the function `conserved_elements_in_common` at <https://github.com/paulati/cladeAcc/blob/master/R/conservation.R>
 
 ## 2. Accelerated elements computation
 
-The set of candidate regions to evaluate acceleration in mammals or aves was the result of the intersection between the amniotes conserved regions (output from Pipeline 1.a) and the mammals conserved regions (output from Pipeline 1.b.) or aves conserved regions (output from Pipeline 1.c.) 
-
-This intersection is performed by teh function `conserved_elements_in_common` at <https://github.com/paulati/cladeAcc/blob/master/R/conservation.R>
+The set of candidate regions to evaluate acceleration in mammals or aves was the result of [Step 1.d](#d.-candidate-regions)
 
 The two intersections of these sets resulted in conserved elements in both amniotes and mammals or amniotes and aves. This intersection is useful for ruling out those elements only conserved in amniotes (which could have been lost in mammals) or only conserved in mammals or aves (probably arisen de novo). 
 
@@ -123,13 +129,13 @@ This step is implemented in the function `compute_observed_phyloP` of <https://g
 
 The neutral model in `phyloP` function was the same one used for the conserved elements computation. 
 
-To assess the significance of accelerated elements obtained as the result of `phyloP` function, we computed empirical p-values using non-parametric simulations instead of relying on the assumption of a chi-square null distribution. (<http://compgen.cshl.edu/rphast/vignette2.pdf>) 
+To assess the significance of accelerated elements obtained as the result of `phyloP` function, we computed empirical p-values using non-parametric simulations instead of relying on the assumption of a chi-square null distribution. (following the strategy described in <http://compgen.cshl.edu/rphast/vignette2.pdf>) 
 
-This step in implemented at <https://github.com/paulati/cladeAcc/blob/master/R/acceleration_non_parametric_stats.R>
+This step is implemented at <https://github.com/paulati/cladeAcc/blob/master/R/acceleration_non_parametric_stats.R>
 
-We began by extracting the regions from the original alignment that correspond to the conserved elements set (candidate regions to evaluate acceleration, as mentioned above), using the `extract.feature.msa` function. This original alignment for mammals is the "100 pathway" filtered by species listed in sections 2.a and 2.b, while for aves it is the "77 pathway" filtered by the species in sections 2.1 and 2.c.
+We began by extracting the regions from the original alignment that correspond to the conserved elements set (candidate regions to evaluate acceleration, as mentioned above), using the `extract.feature.msa` function. This original alignment for mammals is the "100 pathway" filtered by species listed in sections [Species 2.a](#a\.-amniotes) and [Species 2.b](#b\.-mammals), while for aves it is the "77 pathway" filtered by the species in sections [Species 2.a](#a\.-amniotes) and [Species 2.c](#c\.-aves)
 
-We then generated 100,000 synthetic alignments by sampling with replacement from this set of regions and ran phyloP on these alignments to obtain our null distribution of log-likelihood ratios, applying phyloP in the same way as for the real data. 
+We then generated 100,000 synthetic alignments by sampling with replacement from this set of regions and ran phyloP on these alignments to obtain our null distribution of log-likelihood ratios, applying `phyloP` in the same way as for the real data. 
 
 This step in implemented in the function `calculate_non_parametric_distribution_phyloP` of <https://github.com/paulati/cladeAcc/blob/master/R/acceleration_non_parametric_stats.R>
 
@@ -157,12 +163,12 @@ These alignments are required in the next steps of the filtering pipeline.
 
 - Step 2: <https://github.com/paulati/cladeAcc/blob/master/R/custom_filtering_step2.R>
 
-We calculated the consensus sequences for the ingroup and outgroup for each MAF representing a significative accelerated region.
+We calculated the consensus sequences for the ingroup and outgroup for each MAF associated to a significative accelerated region.
 
 - Step 3: <https://github.com/paulati/cladeAcc/blob/master/R/custom_filtering_step3.R>
 
 We define a "shift sequence" as the sequence in a MAF associated to the specie where we want to see the shift (ornAna1 / tinGut2)
-We define a "shift position" as the location in a MAF where ingroup (same for outgroup) consensus sequence is different of the shift sequence
+We define a "shift position" as the location in a MAF where ingroup consensus sequence is different of the shift sequence (same for outgroup).
 
 Based on the consensus sequences obtained in the previous step, we computed these metrics for each region:
 - length of the element
@@ -179,18 +185,18 @@ i.e. there are more differences between the outgroup and the shift sequence than
 
 - Step 5: <https://github.com/paulati/cladeAcc/blob/master/R/custom_filtering_step5.R>
 
-We associate each significant accelerated element obtained from the previous step to a conserved element obtained from step 1 of the pipeline (Conserved elements computation).
+We associate each significant accelerated element obtained from the previous step to a conserved element obtained from [Step 1](#conserved-elements-computation) of the pipeline.
 
 - Step 6: <https://github.com/paulati/cladeAcc/blob/master/R/custom_filtering_step6.R>
 
-We filter the set of conserved element set obtained in the previous step, keeping only those that overlap with at least one significantly accelerated region.
+We filter the set of conserved element set obtained in the previous step, keeping only those that overlap with at least one significant accelerated region.
 
-The result of the filtering process is a set of conserved regions (as defined in Step 1 of the pipeline) that overlaps significant accelerated regions.
+The result of the filtering process is a set of conserved regions (as defined in [Step 1.d](#d.-candidate-regions) of the pipeline) that overlaps significant accelerated regions.
 
 
-## 4.  Reporting
+## 4.  Output
 
-We defined a "candidate functional element" as a conserved region (i.e., the set of candidate regions where acceleration was evaluated, Pipeline) unified by a distance of less than 20 bp from each other and with a minimum size of 100 bp.
+We defined a "candidate functional element" as a conserved region (i.e., the set of candidate regions where acceleration was evaluated, obtained from  [Filtering](#filtering)) unified by a distance of less than 20 bp from each other and with a minimum size of 100 bp.
 
 
 # Examples
