@@ -1,0 +1,230 @@
+---
+title: "Example of acceleration in mammals"
+author: "Paula Beati"
+date: "2025-04-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Acceleration in mammals 
+
+The aim of this example is to calculate acceleration in a sample multiple alignment file (chr114, chr14sample.maf.gz), derived from the MAF file for chromosome 14 available at <https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz100way/maf/chr14.maf.gz>,
+
+## Setup
+
+`cladeAcc` is a package developed to implement the pipeline steps for calculating accelerated elements.
+It is available at <https://github.com/paulati/cladeAcc>
+
+We need to install it
+
+```{r pack_setup}
+
+if (!require(rphast, quietly = TRUE))
+    devtools::install_github("CshlSiepelLab/RPHAST")
+
+if (!require("cladeAcc", quietly = TRUE))
+    devtools::install_github(repo = 'https://github.com/paulati/cladeAcc')
+
+```
+
+
+## Local setup
+
+### User defined paths 
+
+A custom path `user_base_path` must be defined to store temporary results and pipeline output. If not specified, the data will be saved to the default location: ~/.local/share/R/cladeAcc/.
+
+Note 1: Use <<- to assign this value globally (required).
+Note 2: Use the full path; do not use ~ as a shortcut for the home directory (e.g., use /home/user/... instead). The ~ symbol may not be resolved correctly.
+
+`git_base_path` refers to the location where this repository was cloned.
+
+```{r user_defined_paths}
+
+user_base_path <<- '/u01/home/pbeati/2024/lucia/paper_acelerados/testing/202505'
+
+git_base_path <- '/u01/home/pbeati/2024/lucia/paper_acelerados/ncomms-24-47757'
+
+```
+
+### Load helpers
+
+```{r helpers}
+
+base_path <- file.path(git_base_path, 'accelerated_elements')
+scripts_base_path <- file.path(base_path, 'source')
+script_file_path <- file.path(scripts_base_path, 'common.R')
+
+source(script_file_path)
+
+```
+
+
+## Data Preparation
+
+### Alignments
+
+The first step in the analysis is performed by the function `prepare_alignment_files` at <https://github.com/paulati/cladeAcc/blob/master/R/data_preparation.R>
+
+This function downloads multiple alignment files from the public repository and checks their MD5 values.
+
+In this example, we simply copy the sample MAF file to the working directory (either user-defined or the local temporary directory).
+The function `copy_example_alignment` at xxxxxx performs this step.
+
+```{r vignette_setup}
+
+alignment_id_mammals <- '100_way'
+
+copy_example_alignment(alignment_id_mammals, base_path)
+
+```
+
+### Neutral model
+
+`prepare_neutral_model_file` downloads the neutral model from the public repository and verifies its MD5 checksum.
+
+```{r neutral_model}
+
+cladeAcc::prepare_neutral_model_file(alignment_id_mammals)
+
+```
+## Conservation
+
+The `conserved_elements_computation` function at <https://github.com/paulati/cladeAcc/blob/master/R/conservation.R> returns the conserved elements for each clade, and the `conserved_elements_in_common` function returns their intersection.
+
+The required species in each clade are evaluated by the functions `required_species_features_mammals_100way` and `required_species_features_sarcopterygii_100way`, found at <https://github.com/paulati/cladeAcc/blob/master/R/conservation_delegates.R>
+
+Note: These functions can be customized with different criteria and passed via the `required_feats_func` parameter in `conserved_elements_computation`.
+
+
+```{r conservation}
+
+chr_mammals <- 114
+
+clade_1 <- 'mammals'
+chrs <- c(chr_mammals)
+result_100_mammals <- cladeAcc::conserved_elements_computation(
+    alignment_id_mammals, 
+    clade_1, 
+    chrs,
+    required_feats_func = cladeAcc::required_species_features_mammals_100way)
+
+print(result_100_mammals)
+
+clade_2 <- 'sarcopterygii'
+chrs <- c(chr_mammals)
+result_100_sarc <- cladeAcc::conserved_elements_computation(
+    alignment_id_mammals, 
+    clade_2, 
+    chrs,
+    required_feats_func = cladeAcc::required_species_features_sarcopterygii_100way)
+
+print(result_100_sarc)
+
+cladeAcc::conserved_elements_in_common(alignment_id = alignment_id_mammals,
+                                clade_1 = clade_1, 
+                                clade_2 = clade_2, 
+                                chr = chr_mammals,
+                                conserved_path_1 = result_100_mammals[[1]], 
+                                conserved_path_2 = result_100_sarc[[1]])
+
+
+
+```
+
+## Acceleration
+
+To compute accelerated elements, the neutral model tree must include the 'MAMMALS' label.  This is added by the `label_neutral_model_tree_mammals` function. The `compute_accelerated_elements` then calculates acceleration scores for the candidate regions.
+
+Note: The user can define their own `label_neutral_model_tree_mammals` function with different criteria and pass it via the `label_neutral_model_func` parameter to the `compute_accelerated_elements` function.
+
+
+```{r acceleration}
+
+acc_clade_mam <- 'mammals'
+candidate_regions_clade_mam <- 'mammals_sarcopterygii'
+chrs_mam <- list(chr_mammals)
+branch_label_mam <- 'MAMMALS'
+label_neutral_model_func_mam <- cladeAcc::label_neutral_model_tree_mammals
+
+suppressWarnings(
+    paths <- cladeAcc::compute_accelerated_elements(alignment_id_mammals, 
+                                                acc_clade_mam,
+                                                candidate_regions_clade_mam,
+                                                chrs_mam, 
+                                                branch_label_mam,
+                                                label_neutral_model_func_mam,
+                                                feat_lengths = c(25, 50)) 
+)
+                                             
+print(paths)                                          
+
+```
+## Filtering
+
+The scores computed in the previous step are filtered to obtain a set of conserved regions that overlap with accelerated elements.
+
+
+```{r filtering}
+    cladeAcc::process_filtering(alignment_id_mammals, acc_clade_mam, chrs_mam)
+```
+
+## Output
+
+We define a "candidate functional element" as a conserved region (i.e., the set of candidate regions where acceleration was evaluated, obtained from  the previous step unified by a distance of less than 20 bp from each other and with a minimum size of 100 bp.
+
+```{r output}
+# read files:
+score_base_path_base <- file.path(user_base_path, alignment_id_mammals, 'output',  
+            'custom_filtering', 'mammals_sarcopterygii', 'candidate_elements',
+            'score_filtered')
+                             
+score_base_path_base_25 <- file.path(score_base_path_base, '25')
+score_base_path_base_50 <- file.path(score_base_path_base, '50')
+file_name_25 <- paste0('chr', chr_mammals, '_score_25.csv')
+file_name_50 <- paste0('chr', chr_mammals, '_score_50.csv')
+
+file_path_25 <- file.path(score_base_path_base_25, file_name_25)
+file_path_50 <- file.path(score_base_path_base_50, file_name_50)
+            
+file.exists(file_path_25)
+file.exists(file_path_50)                 
+
+data_25 <- read.delim(file_path_25, sep = '\t', header = TRUE)
+data_50 <- read.delim(file_path_50, sep = '\t', header = TRUE)
+data <- rbind(data_25, data_50)
+
+data_sorted <- data[order(data$conserved_element_shift_count, decreasing = TRUE), ]
+
+data_gr <- GenomicRanges::makeGRangesFromDataFrame(data_sorted, 
+                                        seqnames.field = "phastCons_seqnames", 
+                                        start.field = "phastCons_start", 
+                                        end.field = "phastCons_end",  
+                                        keep.extra.columns = TRUE)
+                            
+data_gr_reduced <- GenomicRanges::reduce(data_gr, min.gapwidth = 20L)
+
+output <- data_gr_reduced[data_gr_reduced@ranges@width > 100]
+
+output
+
+```
+---
+
+# Acceleration in mammals (complete analysis)
+
+To perform the complete analysis, the user must make a few minor changes:
+
+1. Set the variables `chrs` and `chrs_mam` to vectors containing the chromosome ids to be processed. Example: `chrs <- c(14, 15, 16)`, `chrs_mam <- list(14, 15, 16)`  
+
+2. Replace the sample alignment copy step with a call to `prepare_alignment_files` at <https://github.com/paulati/cladeAcc/blob/master/R/data_preparation.R>
+
+3. Add a loop to compute `conserved_elements_in_common` for each chromosome.
+
+
+---
+
+
