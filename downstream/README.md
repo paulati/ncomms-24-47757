@@ -10,7 +10,7 @@ Contains R scripts and auxiliary files used for plotting and data analysis in th
 
 ### `data/` Directory
 
-Contains subdirectories with input data used for the analyses. The input data from sections 1-6 was obtained from the generation of accelerated elements, outlined in the repository: <https://github.com/paulati/acc_regions_mammals_aves>.
+Contains subdirectories with input data used for the analyses. The input data from sections 1-6 was obtained from the generation of accelerated elements, outlined in: <https://github.com/paulati/ncomms-24-47757/accelerated_elements>.
 
 1.  `1. mammals_phastCons/`:
     -   Contains three subfolders with PhastCons data for mammalian conserved elements and their intersections:
