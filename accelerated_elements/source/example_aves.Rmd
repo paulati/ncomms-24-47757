@@ -235,7 +235,7 @@ output
 ```
 ---
 
-# Acceleration in mammals (complete analysis)
+# Acceleration in aves (complete analysis)
 
 To perform the complete analysis, the user must make a few minor changes:
 
