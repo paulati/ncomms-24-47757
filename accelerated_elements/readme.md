@@ -203,3 +203,5 @@ We defined a "candidate functional element" as a conserved region (i.e., the set
 
 Mammals <https://github.com/paulati/ncomms-24-47757/tree/main/accelerated_elements/source/example_mammals.Rmd>
 
+Aves <https://github.com/paulati/ncomms-24-47757/tree/main/accelerated_elements/source/example_aves.Rmd>
+
