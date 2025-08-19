@@ -42,6 +42,24 @@ if (!require(rphast, quietly = TRUE))
 if (!require(rGREAT, quietly = TRUE))
     devtools::install_github("jokergoo/rGREAT")
 
+
+if (!require(simpleCache, quietly = TRUE))
+    install.packages("simpleCache")
+
+if (!require(LOLA, quietly = TRUE))
+    BiocManager::install("LOLA")
+
+if (!require(rphylopic, quietly = TRUE))
+    install.packages("rphylopic")
+
+
+if (!require(ggthemr, quietly = TRUE))
+    devtools::install_github(repo = 'https://github.com/Mikata-Project/ggthemr')
+
+if (!require("cladeAcc", quietly = TRUE))
+    devtools::install_github(repo = 'https://github.com/paulati/cladeAcc')
+
+
 # markdown pdf:
 # install.packages(c('tinytex', 'rmarkdown'))
 # tinytex::install_tinytex()
