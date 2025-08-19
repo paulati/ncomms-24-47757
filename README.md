@@ -42,17 +42,24 @@ And can be installed by running this script.
 
 ## Data Availability
 
-`downstream/outputs`
+### Conserved and accelerated elements coding / non-coding
 
-- `go_analysis`
+-   <https://github.com/paulati/ncomms-24-47757/tree/main/downstream/outputs>
 
+### Clustering
 
+-   <https://github.com/paulati/ncomms-24-47757/tree/main/downstream/outputs>
 
-`LOLA` 
-- https://github.com/paulati/ncomms-24-47757/blob/main/lola/data/lola_filtered_mammals.csv
-- https://github.com/paulati/ncomms-24-47757/blob/main/lola/data/lola_filtered_aves.csv
-- https://github.com/paulati/ncomms-24-47757/blob/main/lola/data/lola_filtered_aves_FAANG.csv
+### GO enrichment analysis
 
+-   <https://github.com/paulati/ncomms-24-47757/tree/main/go_analysis/data/output/go_terms/mammals/rgreat_sim_significant/union>
 
+-   <https://github.com/paulati/ncomms-24-47757/tree/main/go_analysis/data/output/go_terms/aves/rgreat_sim_significant/union>
 
+### LOLA
 
+-   <https://github.com/paulati/ncomms-24-47757/blob/main/lola/data/lola_filtered_mammals.csv>
+
+-   <https://github.com/paulati/ncomms-24-47757/blob/main/lola/data/lola_filtered_aves.csv>
+
+-   <https://github.com/paulati/ncomms-24-47757/blob/main/lola/data/lola_filtered_aves_FAANG.csv>
