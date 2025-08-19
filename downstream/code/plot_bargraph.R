@@ -1,3 +1,6 @@
+# Author: Anabella Trigila
+# ------
+
 # plot_bargraph.R
 
 # Install and load ggthemr package

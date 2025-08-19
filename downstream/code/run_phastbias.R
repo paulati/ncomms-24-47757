@@ -1,3 +1,7 @@
+# Author: Anabella Trigila
+# ------
+
+
 library(rphast)
 
 

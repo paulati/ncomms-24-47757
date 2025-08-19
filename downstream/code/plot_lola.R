@@ -1,3 +1,7 @@
+# Author: Anabella Trigila
+# ------
+
+
 # plot_lola.R
 
 # Install and load ggthemr package

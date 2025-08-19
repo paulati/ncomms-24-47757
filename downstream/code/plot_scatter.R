@@ -1,3 +1,7 @@
+# Author: Anabella Trigila
+# ------
+
+
 # Load necessary libraries
 library(ggthemr)
 library(ggpubr)
